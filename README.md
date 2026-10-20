@@ -23,6 +23,7 @@ python3 scripts/project_keeper.py --project /path/to/project context
 - [V0.1 基线范围](pjkp/V0.1/requirements.md)
 - [本轮基线验证](pjkp/V0.1/test-results.md)
 - [V0.2 需求](pjkp/V0.2/requirements.md)、[执行方案](pjkp/V0.2/spec.md)、[测试方案](pjkp/V0.2/test-plan.md)
+- [V0.2 开发草稿 PR #1](https://github.com/jiamingyuan/project-keeper/pull/1)
 - [早期验证及已知限制](tests/verification-report.md)
 
 ```sh

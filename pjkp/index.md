@@ -7,6 +7,7 @@
 - 形态：单个多 Action Skill；本目录的 `pjkp/` 是项目自身上下文，不是其他项目的数据集中存储。
 - 当前状态：V0.1 已发布，V0.2 在 develop/V0.2 分支完成首批实现与 53 项自动化验证，等待用户审阅；本轮没有补造历史 version-close。
 - GitHub：https://github.com/jiamingyuan/project-keeper ，发布版本以 V0.1 标签与 Release 为准。
+- 开发审阅：[V0.2 草稿 PR #1](https://github.com/jiamingyuan/project-keeper/pull/1)，分支 develop/V0.2；版本尚未用户验收或关闭。
 - 配置：[config.toml](config.toml)（仅预留，不参与运行）
 
 ## 文件导航

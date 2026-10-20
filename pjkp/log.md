@@ -99,3 +99,11 @@
 
 
 - 执行依据：{"basis": {"V0.2/requirements.md": "2630aeb332b35233dd066b2ba64aff023a406760b9c577f37183a1768744d389", "V0.2/spec.md": "2c8b3e7d50cdcc91007c28ce64a094a5b87e62550e3dcc664fbf9ac5feee7d65", "V0.2/test-plan.md": "f68f600e64a3d84cee19d0bfa08f921c8fe000726df406a9ce20046679310361", "V0.2/test-results.md": "f55f252462e8dce08a3a8def9a390be5a0a2f032ae20e949df76f756122bdbc4"}, "code_id": "code-20261020-v02-001", "id": "test-20261020-v02-001", "implementation": {"SKILL.md": "285476eec822abce2b14d6f066679659b4502f17fe93da6910699e6b1c74e06e", "assets/templates/index.md": "d7e4a4914fb3a48b3fceee3008ac3e361cfbdd53221e7a0593bbc312b912e398", "assets/templates/roadmap.md": "fba15df18630e1453fe8e451cd9801226cfadab1e46bde041d53ddd67e556f16", "references/cli.md": "308f6a1fd2ef827b4b3931660ac8e4d4bfd0ea61021a15f710a148fdeaefa657", "references/close-cli.md": "2241d72ae23a08a249ddb517d2fee5811d0e54523ddfdbd526314052380981b3", "references/closing.md": "9a15997f315dfd94ca78a8288411b23dea5348ff5b5405d7c7ee452d38c78c73", "references/project.md": "65c5c544c3b7eb62c7b751c594d45aec2095550407cb88d1b1e1bd779472e22a", "references/roadmap.md": "2d14f537f4dd75befb70848bce4c50c3e4b0512e934b96321f2f5603ca1b8d6a", "references/verification.md": "68cf5f2a1e75e132787cc017673e4186ad819468b5ee5d5650d930f0fc3d409b", "scripts/project_keeper.py": "93a0f331bbb8f31924c082190d9ce1977e7c4231cadd630947606175061b7077", "tests/measure_context.py": "090d65d1fb10b47ac384931c11b424c3d5510fb74c5ba63df89f7338222e323f", "tests/test_project_keeper.py": "ed32453f43ae79ee496c92bd6ec5264e9b0ef3e1bfd67fb66b51e0dee7a1c07f"}}
+
+<!-- pjkp:log {"action": "github-publish", "id": "github-publish-20261020-v02", "outcome": "completed", "parent": null, "sha256": "978162ac5b16b05d344491f268a0570c7e3bf25030ede06e6dd04b009f7a3e66", "time": "2026-10-20T11:24:38.513156+00:00", "version": "V0.2"} -->
+## 2026-10-20T11:24:38.513156+00:00 — github-publish — V0.2
+
+- 来源：用户要求在指定 GitHub 仓库呈现 V0.1 并启动 V0.2，开发范围承接已有两项 todo。
+- 实际完成：推送 develop/V0.2 分支及首批实现提交 4fe36ad，创建草稿 PR https://github.com/jiamingyuan/project-keeper/pull/1 ，目标 main；将链接同步到 README 和 pjkp/index.md。
+- 验证：53 项测试通过、Skill 格式校验通过；代码和测试执行记录已保存，最终 V0.2 test 阶段结构检查无错误或警告。工作区提交前检查通过。
+- 状态：草稿 PR 待用户审阅，未合并 main、未发布 V0.2、未执行 V0.2 version-close，未自动勾选用户 todo。V0.1 标签仍固定在 1f171a9。
