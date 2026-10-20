@@ -10,7 +10,7 @@
 - [项目简介](project-brief.md)：背景与功能。
 - [架构](architecture.md)：框架、机制与源码入口。
 - [规则](rules.md)：原则和边界。
-- [规划](roadmap.md)：愿景、里程碑、短期待办。
+- [规划](roadmap.md)：愿景、里程碑、todo。
 - [日志](log.md)：行为历史。
 
 ## 版本状态

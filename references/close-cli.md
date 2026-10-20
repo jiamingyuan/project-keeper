@@ -28,6 +28,8 @@
 
 操作 id 在项目中唯一，不超过 80 字符，不含冒号。prepare 写入 `V1.0/.operations/close-001/operation.json`，存储前后全文、指纹、用户确认、执行依据、阶段与进度。日志和 config 不属于回滚目标。该记录可能含项目内部知识，与项目其他私有材料同样保管；不要编辑记录内容绕过冲突检查。
 
+若 roadmap 正文变化，提案另加 `roadmap_sources`，按受影响模块提供用户 `statement` 和 `source`，格式同 [规划写入](roadmap.md) 的 sources。未变化不要求新来源；用户验收不能替代每项新增规划的依据。来源会随关闭操作和关联日志保存。
+
 apply 支持同一操作续接，依次更新描述、规划、版本结果和索引；不是跨文件原子事务。全部完成记关联的 project-update 与 version-close 日志；已完成 apply 重试不覆盖后续编辑。
 
 undo 保留原记录、代码和测试。冲突返回 undo-partial；status --full 仅针对该操作展示快照供合并，不自动装载到每轮上下文。合并 JSON：

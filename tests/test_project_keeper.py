@@ -53,7 +53,9 @@ class KeeperTests(unittest.TestCase):
             elif changed:
                 after += "\n样例版本已验证的描述变化。\n"
             updates[rel] = {"before_sha256": pk.digest(before), "after": after}
-        return {"acceptance": {"confirmed": True, "statement": "我验收通过了", "source": "样例用户输入"}, "summary": "按实际样例交付同步，未声明部署", "updates": updates}
+        return {"acceptance": {"confirmed": True, "statement": "我验收通过了", "source": "样例用户输入"},
+                "roadmap_sources": {"todo": {"statement": "请将样例任务状态更新为已验证", "source": "样例用户输入"}} if changed else {},
+                "summary": "按实际样例交付同步，未声明部署", "updates": updates}
 
     def close(self, v="V1.0", op="close-1", changed=True):
         pk.prepare(self.root, v, op, self.proposal(v, changed))
@@ -459,6 +461,126 @@ class KeeperTests(unittest.TestCase):
         self.assertEqual(run("close", "undo", "V1.0", "cli-close", "--reason", "用户重新打开")["status"], "undone")
         self.assertTrue(run("validate", "--version", "V1.0", "--stage", "test")["valid"])
         self.assertIn("cli-code", run("read", "log.md", "--event", "cli-code")["text"])
+
+    def roadmap_proposal(self):
+        before = self.get("roadmap.md")
+        return {"before_sha256": pk.digest(before), "after": before + "\n- [ ] 用户要求支持离线读取。\n",
+                "summary": "记录用户提出的离线读取要求", "sources": {
+                    "todo": {"statement": "请把支持离线读取记入 todo", "source": "临时样例用户消息"}}}
+
+    def test_roadmap_new_title_and_legacy_read_without_rewrite(self):
+        canonical = self.get("roadmap.md")
+        self.assertEqual(tuple(pk.roadmap_parts(canonical)[1]), pk.ROADMAP_SECTIONS)
+        legacy = canonical.replace("## todo", "## 短期待办")
+        self.set("roadmap.md", legacy)
+        result = pk.validate(self.root)
+        self.assertTrue(result["valid"])
+        self.assertTrue(any("旧标题" in warning for warning in result["warnings"]))
+        self.assertEqual(legacy, self.get("roadmap.md"))
+
+    def test_roadmap_missing_source_rejects_without_mutation(self):
+        before, log = self.get("roadmap.md"), self.get("log.md")
+        proposal = self.roadmap_proposal()
+        proposal["sources"] = {}
+        with self.assertRaises(pk.KeeperError):
+            pk.update_roadmap(self.root, "roadmap-no-source", proposal)
+        self.assertEqual(before, self.get("roadmap.md"))
+        self.assertEqual(log, self.get("log.md"))
+
+    def test_roadmap_empty_or_malformed_sources_reject(self):
+        before = self.get("roadmap.md")
+        for sources in ([], {"todo": None}, {"todo": {"statement": " ", "source": "用户"}},
+                        {"todo": {"statement": "原话", "source": 3}}, {"其他": {"statement": "原话", "source": "用户"}}):
+            with self.subTest(sources=sources):
+                proposal = self.roadmap_proposal()
+                proposal["sources"] = sources
+                with self.assertRaises(pk.KeeperError):
+                    pk.update_roadmap(self.root, "malformed", proposal)
+                self.assertEqual(before, self.get("roadmap.md"))
+
+    def test_roadmap_source_must_cover_each_changed_module(self):
+        proposal = self.roadmap_proposal()
+        proposal["after"] = proposal["after"].replace("## 里程碑", "## 里程碑\n\n新增未获来源支持的里程碑。")
+        with self.assertRaisesRegex(pk.KeeperError, "里程碑"):
+            pk.update_roadmap(self.root, "missing-milestone-source", proposal)
+        proposal["sources"]["里程碑"] = {"statement": "请记录这个里程碑", "source": "样例用户消息2"}
+        pk.update_roadmap(self.root, "with-both-sources", proposal)
+        self.assertEqual(proposal["after"], self.get("roadmap.md"))
+        self.assertIn("样例用户消息2", self.get("log.md"))
+
+    def test_roadmap_stale_write_preserves_later_content(self):
+        proposal = self.roadmap_proposal()
+        changed = self.get("roadmap.md") + "\n用户后续修改。\n"
+        self.set("roadmap.md", changed)
+        with self.assertRaises(pk.KeeperError):
+            pk.update_roadmap(self.root, "stale-roadmap", proposal)
+        self.assertEqual(changed, self.get("roadmap.md"))
+
+    def test_roadmap_repeat_preserves_history_and_new_edits(self):
+        proposal = self.roadmap_proposal()
+        log = self.get("log.md")
+        pk.update_roadmap(self.root, "roadmap-once", proposal)
+        self.assertTrue(self.get("log.md").startswith(log))
+        later = self.get("roadmap.md") + "\n后续工作\n"
+        self.set("roadmap.md", later)
+        self.assertTrue(pk.update_roadmap(self.root, "roadmap-once", proposal)["replayed"])
+        self.assertEqual(later, self.get("roadmap.md"))
+        self.assertEqual(len(pk.log_entries(self.get("log.md"))), 1)
+        proposal["summary"] = "同 id 不同内容"
+        with self.assertRaises(pk.KeeperError):
+            pk.update_roadmap(self.root, "roadmap-once", proposal)
+
+    def test_roadmap_log_interruption_retry(self):
+        proposal = self.roadmap_proposal()
+        with patch.object(pk, "append_log", side_effect=OSError("simulated log interruption")):
+            with self.assertRaises(OSError):
+                pk.update_roadmap(self.root, "roadmap-resume", proposal)
+        self.assertEqual(proposal["after"], self.get("roadmap.md"))
+        pk.update_roadmap(self.root, "roadmap-resume", proposal)
+        self.assertEqual(len(pk.log_entries(self.get("log.md"))), 1)
+
+    def test_roadmap_prefix_and_structure_cannot_hide_new_plans(self):
+        for after in (self.roadmap_proposal()["after"].replace("## 愿景", "新增目标\n\n## 愿景", 1),
+                      self.roadmap_proposal()["after"] + "\n## 额外目标\n计划\n"):
+            proposal = self.roadmap_proposal()
+            proposal["after"] = after
+            with self.assertRaises(pk.KeeperError):
+                pk.update_roadmap(self.root, "hidden-plans", proposal)
+
+    def test_close_requires_and_persists_roadmap_sources(self):
+        self.ready()
+        proposal = self.proposal()
+        proposal.pop("roadmap_sources")
+        with self.assertRaises(pk.KeeperError):
+            pk.prepare(self.root, "V1.0", "no-roadmap-source", proposal)
+        self.assertFalse(pk.path(self.root, "V1.0/.operations/no-roadmap-source/operation.json").exists())
+        proposal = self.proposal()
+        pk.prepare(self.root, "V1.0", "with-source", proposal)
+        pk.apply_close(self.root, "V1.0", "with-source")
+        self.assertEqual(pk.load_operation(self.root, "V1.0", "with-source")["roadmap_sources"], proposal["roadmap_sources"])
+        self.assertIn("请将样例任务状态更新为已验证", self.get("log.md"))
+
+    def test_cli_roadmap_update_records_one_event(self):
+        proposal = self.roadmap_proposal()
+        target = self.root / "roadmap-proposal.json"
+        target.write_text(json.dumps(proposal, ensure_ascii=False), encoding="utf-8")
+        result = subprocess.run([sys.executable, "-B", str(SCRIPT), "--project", str(self.root),
+                                 "roadmap-update", "--id", "cli-roadmap", "--proposal", str(target)],
+                                text=True, capture_output=True)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(proposal["after"], self.get("roadmap.md"))
+        self.assertEqual([meta["action"] for meta, _ in pk.log_entries(self.get("log.md"))], ["roadmap-update"])
+
+    def test_legacy_close_log_replay_preserves_existing_payload(self):
+        self.ready()
+        pk.prepare(self.root, "V1.0", "legacy-close", self.proposal(changed=False))
+        op = pk.load_operation(self.root, "V1.0", "legacy-close")
+        op.pop("roadmap_sources")
+        pk.save_operation(self.root, op)
+        pk.apply_close(self.root, "V1.0", "legacy-close")
+        before = self.get("log.md")
+        pk.apply_close(self.root, "V1.0", "legacy-close")
+        self.assertEqual(before, self.get("log.md"))
 
 
 if __name__ == "__main__":

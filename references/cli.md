@@ -24,6 +24,8 @@ validate 的阶段为 requirements、plan、test、close。按阶段要求文件
 
 config.toml 只预留注释，非注释内容会被告警但不使用。不提供路径配置或全局配置继承。
 
+roadmap 新模板使用 todo，旧短期待办标题只读兼容并提示，校验不自动改写。规划变更使用 `roadmap-update --id <id> --proposal <JSON路径>`；提案及逐模块用户来源见 [规划写入](roadmap.md)。该命令已记一条日志，不额外调用 log。
+
 ## 原文导航
 
 ```text

@@ -11,7 +11,7 @@ from test_project_keeper import KeeperTests, SCRIPT, pk
 
 def measure():
     skill = SCRIPT.parents[1]
-    runtime = [skill / "SKILL.md"] + [skill / "references" / (name + ".md") for name in ("project", "planning", "execution", "closing", "cli", "close-cli")]
+    runtime = [skill / "SKILL.md"] + [skill / "references" / (name + ".md") for name in ("project", "planning", "execution", "closing", "cli", "close-cli", "roadmap")]
     templates = list((skill / "assets/templates").iterdir())
     def size(files):
         return sum(len(p.read_bytes()) for p in set(files))

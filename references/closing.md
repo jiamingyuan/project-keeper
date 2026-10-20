@@ -6,7 +6,7 @@
 
 1. 读取当前需求、spec、测试方案、测试结果和代码执行记录，核对真实实现/环境及用户确认。不要用脚本布尔参数伪造确认。
 2. 读取本次需要检查的 project-brief、architecture、roadmap、index。拟定四份文档的目标全文：版本 requirements、简介、架构、roadmap；无变化也包含原文。此时不要直接改目标文件。
-3. 阅读 [关闭辅助接口](close-cli.md)，用 apply_patch 在临时位置创建关闭提案 JSON，带当前文件哈希、各自目标全文、用户确认和同步摘要；不把提案当成事实。
+3. 阅读 [关闭辅助接口](close-cli.md)，用 apply_patch 在临时位置创建关闭提案 JSON，带当前文件哈希、各自目标全文、用户确认和同步摘要。规划变化还须按 [来源门槛](roadmap.md) 提供逐模块 roadmap_sources，不借关闭补写未来规划；不把提案当成事实。
 4. close prepare 在版本 .operations 内持久保存 before/after、输入证据、确认及操作标识；索引由脚本从版本状态生成。保存失败或依据变化则停止。
 5. close apply 按记录应用，先比对当前与 before/after，原文件已变更则停止并保留部分状态；断点续接用同一操作，不创建另一操作绕过。
 6. 脚本为此次 project-update 子行为及 version-close 记录关联日志，校验操作状态全部 applied 再报告关闭。脚本日志包含提案中的同步摘要，Agent 对语义正确性负责。

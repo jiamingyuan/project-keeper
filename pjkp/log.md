@@ -51,3 +51,51 @@
 - 版本：V0.1 是对现有实现建立发布基线，非重新执行或追造早期迭代。登记版本需求、当前验证结果、README、VERSION 与 Git 忽略规则，保留原有运行代码。
 - 验证：42 项现有测试通过；已知 roadmap 标题与旧模板不匹配保留。系统 Python 缺少 PyYAML，Skill 格式验证需使用可用验证环境重试。
 - 状态：本次 GitHub 发布授权不被伪造为历史 version-close，未生成虚构代码执行或验收记录。下一步在独立开发分支以用户已有两项 todo 启动 V0.2。
+
+<!-- pjkp:log {"action": "version-create", "id": "version-create-20261020-v02", "outcome": "completed", "parent": null, "sha256": "a2cde39070cd1512a120a3e1e0d52ab96cdf1069e049374a004115eda72da410", "time": "2026-10-20T11:18:09.713377+00:00", "version": "V0.2"} -->
+## 2026-10-20T11:18:09.713377+00:00 — version-create — V0.2
+
+- 来源：用户于 2026-10-20 明确启动 V0.2；范围承接其已有两项 todo，未新建 Agent 自拟 roadmap 目标。
+- 新建：V0.2/requirements.md，说明 todo 命名和规划来源限制；V0.1 标签已发布且固定，V0.2 在 develop/V0.2 分支推进。
+- 边界：采用受控写入及关闭入口来源检查，不能认证用户身份或阻止外部文件编辑；本轮不做最终用户验收或 version-close。
+
+<!-- pjkp:log {"action": "plan", "id": "plan-20261020-v02", "outcome": "completed", "parent": null, "sha256": "a269f136761dca8d2bf36339467a8e620158b7737f7a9358ca7a8cb4912c6735", "time": "2026-10-20T11:18:09.746488+00:00", "version": "V0.2"} -->
+## 2026-10-20T11:18:09.746488+00:00 — plan — V0.2
+
+- 依据：V0.2 需求、项目规则、用户已有 todo，以及现有模板、关闭流程、CLI 和 42 项测试。
+- 方案：统一 todo，兼容旧标题；新增逐模块用户来源检查和 roadmap-update 辅助写入；关闭准备复用检查并保留来源。
+- 产物：V0.2/spec.md、V0.2/test-plan.md，包含执行任务、验证映射、重试及权限边界。
+- 需求回写：来源是调用者对真实消息的记录，不具有身份认证或自动语义判断；历史 Agent 草案不会因升级获得确认。
+- 结果：方案可执行，当前用户已授权启动开发；版本关闭仍待后续用户验收。
+
+<!-- pjkp:log {"action": "github-publish", "id": "github-publish-20261020-v01", "outcome": "completed", "parent": null, "sha256": "9bbfec25ea602ddeb901461299c20bcdaac7b16a3f7ca44652f276b610405dfd", "time": "2026-10-20T11:23:27.052199+00:00", "version": "V0.1"} -->
+## 2026-10-20T11:23:27.052199+00:00 — github-publish — V0.1
+
+- 来源：用户要求当前实现定义为 V0.1 并在 GitHub 呈现，指定公开仓库 https://github.com/jiamingyuan/project-keeper 。
+- 实际完成：初始化本项目 Git 仓库，以提交 1f171a9 保存 V0.1 基线，推送 main 与固定的 V0.1 标签；创建 Release https://github.com/jiamingyuan/project-keeper/releases/tag/V0.1 。
+- 发布材料：README、VERSION、基线范围与本轮验证。42 项基线测试通过，临时 venv 中的 Skill 格式检查通过，旧 roadmap 标题不匹配作为基线已知限制保留。
+- 未做：未移动 V0.1 标签、未补造过去迭代或 version-close。V0.2 在 develop/V0.2 独立分支开发。
+
+<!-- pjkp:log {"action": "code-execute", "id": "code-20261020-v02-001", "outcome": "completed", "parent": null, "sha256": "2a89a0f6fa668f17e82e758ef5f234fb4aa645dad25b27c5a3e5bc64920f8287", "time": "2026-10-20T11:23:27.088141+00:00", "version": "V0.2"} -->
+## 2026-10-20T11:23:27.088141+00:00 — code-execute — V0.2
+
+- 依据：V0.2/spec.md、需求和用户已提出的 todo；当前用户授权启动开发。
+- 修改：统一 todo 模板并兼容旧标题；新增按模块用户来源检查、roadmap-update 受控写入及其重试；关闭 prepare 复用来源门槛并在持久操作和日志中保存来源，保持旧关闭日志重放兼容。
+- 指令：轻入口增加关键来源规则，细节放按需 references/roadmap.md；同步项目/关闭说明、自身项目简介、架构、规则和入口。
+- 开发验证：先发现原关闭样例缺少来源导致回归受阻，更新样例为真实模拟来源并新增 11 项边界场景；最新 53 项测试通过，Skill 格式和 diff 检查通过，读取量测量成功。
+- 结果：首批实现完成，不把待办自动勾选或执行用户验收；代码/测试记录用于当前分支的实际执行，V0.1 固定标签不变。
+
+
+- 执行依据：{"basis": {"V0.2/requirements.md": "2630aeb332b35233dd066b2ba64aff023a406760b9c577f37183a1768744d389", "V0.2/spec.md": "2c8b3e7d50cdcc91007c28ce64a094a5b87e62550e3dcc664fbf9ac5feee7d65"}, "id": "code-20261020-v02-001", "implementation": {"SKILL.md": "285476eec822abce2b14d6f066679659b4502f17fe93da6910699e6b1c74e06e", "assets/templates/index.md": "d7e4a4914fb3a48b3fceee3008ac3e361cfbdd53221e7a0593bbc312b912e398", "assets/templates/roadmap.md": "fba15df18630e1453fe8e451cd9801226cfadab1e46bde041d53ddd67e556f16", "references/cli.md": "308f6a1fd2ef827b4b3931660ac8e4d4bfd0ea61021a15f710a148fdeaefa657", "references/close-cli.md": "2241d72ae23a08a249ddb517d2fee5811d0e54523ddfdbd526314052380981b3", "references/closing.md": "9a15997f315dfd94ca78a8288411b23dea5348ff5b5405d7c7ee452d38c78c73", "references/project.md": "65c5c544c3b7eb62c7b751c594d45aec2095550407cb88d1b1e1bd779472e22a", "references/roadmap.md": "2d14f537f4dd75befb70848bce4c50c3e4b0512e934b96321f2f5603ca1b8d6a", "references/verification.md": "68cf5f2a1e75e132787cc017673e4186ad819468b5ee5d5650d930f0fc3d409b", "scripts/project_keeper.py": "93a0f331bbb8f31924c082190d9ce1977e7c4231cadd630947606175061b7077", "tests/measure_context.py": "090d65d1fb10b47ac384931c11b424c3d5510fb74c5ba63df89f7338222e323f", "tests/test_project_keeper.py": "ed32453f43ae79ee496c92bd6ec5264e9b0ef3e1bfd67fb66b51e0dee7a1c07f"}}
+
+<!-- pjkp:log {"action": "test-execute", "id": "test-20261020-v02-001", "outcome": "completed", "parent": null, "sha256": "b501bd7d9944c3401c61a5e8cb4f74800b6adbb5c79434c4086004bd70ff62bb", "time": "2026-10-20T11:23:27.130088+00:00", "version": "V0.2"} -->
+## 2026-10-20T11:23:27.130088+00:00 — test-execute — V0.2
+
+- 批次：dev-20261020-02；依据 V0.2 需求、spec、test-plan 和当前代码执行批次。
+- 实际命令：python3 -B -m unittest discover -s tests，53 项通过；临时 venv 中运行 skill-creator quick_validate，Skill is valid!；git diff --check 通过；tests/measure_context.py 成功。
+- 覆盖：逐模块来源门槛、空值和错误类型、过期写入、幂等与中断重试、关闭同步、旧标题和旧关闭日志兼容，及原有执行证据/关闭/undo/隔离回归。
+- 结果链接：pjkp/V0.2/test-results.md。首轮 42 项回归中 1 失败和 16 错误的历史保留，没有用新批次覆盖。
+- 未覆盖：用户身份与消息真实性、自然语言忠实度、独立模型端到端效果和复杂真实项目协作。测试通过不代表用户验收，V0.2 不关闭。
+
+
+- 执行依据：{"basis": {"V0.2/requirements.md": "2630aeb332b35233dd066b2ba64aff023a406760b9c577f37183a1768744d389", "V0.2/spec.md": "2c8b3e7d50cdcc91007c28ce64a094a5b87e62550e3dcc664fbf9ac5feee7d65", "V0.2/test-plan.md": "f68f600e64a3d84cee19d0bfa08f921c8fe000726df406a9ce20046679310361", "V0.2/test-results.md": "f55f252462e8dce08a3a8def9a390be5a0a2f032ae20e949df76f756122bdbc4"}, "code_id": "code-20261020-v02-001", "id": "test-20261020-v02-001", "implementation": {"SKILL.md": "285476eec822abce2b14d6f066679659b4502f17fe93da6910699e6b1c74e06e", "assets/templates/index.md": "d7e4a4914fb3a48b3fceee3008ac3e361cfbdd53221e7a0593bbc312b912e398", "assets/templates/roadmap.md": "fba15df18630e1453fe8e451cd9801226cfadab1e46bde041d53ddd67e556f16", "references/cli.md": "308f6a1fd2ef827b4b3931660ac8e4d4bfd0ea61021a15f710a148fdeaefa657", "references/close-cli.md": "2241d72ae23a08a249ddb517d2fee5811d0e54523ddfdbd526314052380981b3", "references/closing.md": "9a15997f315dfd94ca78a8288411b23dea5348ff5b5405d7c7ee452d38c78c73", "references/project.md": "65c5c544c3b7eb62c7b751c594d45aec2095550407cb88d1b1e1bd779472e22a", "references/roadmap.md": "2d14f537f4dd75befb70848bce4c50c3e4b0512e934b96321f2f5603ca1b8d6a", "references/verification.md": "68cf5f2a1e75e132787cc017673e4186ad819468b5ee5d5650d930f0fc3d409b", "scripts/project_keeper.py": "93a0f331bbb8f31924c082190d9ce1977e7c4231cadd630947606175061b7077", "tests/measure_context.py": "090d65d1fb10b47ac384931c11b424c3d5510fb74c5ba63df89f7338222e323f", "tests/test_project_keeper.py": "ed32453f43ae79ee496c92bd6ec5264e9b0ef3e1bfd67fb66b51e0dee7a1c07f"}}

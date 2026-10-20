@@ -26,6 +26,7 @@ IDENTIFIER = re.compile(r"[A-Za-z0-9][A-Za-z0-9_.:-]{0,119}\Z")
 STATE = re.compile(r"^<!-- pjkp:state (.+) -->$", re.M)
 START, END = "<!-- pjkp:versions:start -->", "<!-- pjkp:versions:end -->"
 LOG_META = re.compile(r"^<!-- pjkp:log (.+) -->$", re.M)
+ROADMAP_SECTIONS = ("愿景与长期规划", "里程碑", "todo")
 
 
 class KeeperError(ValueError):
@@ -175,6 +176,80 @@ def render(name, project, version=""):
     return (TEMPLATES / name).read_text(encoding="utf-8").replace("{{project}}", project).replace("{{version}}", version)
 
 
+def roadmap_parts(text):
+    """Normalize only the legacy heading, never rewrite planning content."""
+    items = headings(text, 2)
+    parts = {}
+    for item in items:
+        title = "todo" if item["title"] == "短期待办" else item["title"]
+        if title in parts or title not in ROADMAP_SECTIONS:
+            fail("roadmap 模块重复或未知")
+        content = section(text, item["title"])
+        parts[title] = "\n".join(content.splitlines()[1:]).strip()
+    if tuple(parts) != ROADMAP_SECTIONS:
+        fail("roadmap 须保留愿景与长期规划、里程碑、todo 三个模块")
+    prefix = "\n".join(text.splitlines()[:items[0]["line"] - 1]).strip()
+    return prefix, parts
+
+
+def checked_roadmap_sources(sources):
+    if not isinstance(sources, dict) or set(sources) - set(ROADMAP_SECTIONS):
+        fail("规划 sources 须按愿景与长期规划、里程碑、todo 提供")
+    for title, evidence in sources.items():
+        if not isinstance(evidence, dict) or any(
+            not isinstance(evidence.get(key), str) or not evidence[key].strip()
+            for key in ("statement", "source")
+        ):
+            fail("规划模块需要用户原话 statement 与来源 source: " + title)
+    return sources
+
+
+def check_roadmap_change(before, after, sources=None):
+    sources = checked_roadmap_sources({} if sources is None else sources)
+    old_prefix, old = roadmap_parts(before)
+    new_prefix, new = roadmap_parts(after)
+    if old_prefix != new_prefix:
+        fail("受控规划更新只修改模块正文，不改标题前的内容")
+    changed = [title for title in ROADMAP_SECTIONS if old[title] != new[title]]
+    if set(changed) - set(sources):
+        fail("规划变更缺少用户来源: " + ", ".join(sorted(set(changed) - set(sources))))
+    return changed
+
+
+def update_roadmap(root, event, proposal):
+    checked_id(event)
+    if not isinstance(proposal, dict):
+        fail("规划提案须为 JSON 对象")
+    after, expected = proposal.get("after"), proposal.get("before_sha256")
+    summary = proposal.get("summary")
+    if not isinstance(after, str) or not isinstance(expected, str) or not re.fullmatch(r"[0-9a-f]{64}", expected):
+        fail("规划提案需要目标全文与有效的 before_sha256")
+    if not isinstance(summary, str) or not summary.strip() or "<!-- pjkp:" in summary:
+        fail("规划提案需要非空摘要且不能含保留标记")
+    sources = checked_roadmap_sources(proposal.get("sources", {}))
+    validate_doc("roadmap.md", after)
+    body = "- 用户来源：" + encode(sources) + "\n- 摘要：" + summary
+    body += "\n- 前指纹：" + expected + "\n- 后指纹：" + digest(after)
+    if "<!-- pjkp:" in body:
+        fail("规划来源不能包含日志保留标记")
+    if any(meta["id"] == event for meta, _ in log_entries(read(root, "log.md"))):
+        append_log(root, event, "roadmap-update", body)
+        return {"updated": False, "replayed": True, "id": event}
+    before = read(root, "roadmap.md")
+    if digest(before) == expected:
+        check_roadmap_change(before, after, sources)
+    elif before != after:
+        fail("规划写入依据已变化；重新读取并核对，不覆盖后续编辑")
+    elif not sources:
+        fail("恢复规划日志仍须保留原用户来源")
+    changed = before != after
+    if changed:
+        write(root, "roadmap.md", after, digest(before))
+    # A retry with the identical proposal repairs a log failure after writing.
+    append_log(root, event, "roadmap-update", body)
+    return {"updated": changed, "id": event}
+
+
 def validate_doc(name, text):
     if name == "log.md":
         if len(headings(text, 1)) != 1:
@@ -187,6 +262,8 @@ def validate_doc(name, text):
         return
     expected = [h["title"] for h in headings((TEMPLATES / name).read_text(encoding="utf-8"), 2)]
     found = [h["title"] for h in headings(text, 2)]
+    if name == "roadmap.md":
+        found = ["todo" if title == "短期待办" else title for title in found]
     if expected != found:
         fail(name + " 二级模块须依模板保留: " + str(expected))
     if len(headings(text, 1)) != 1:
@@ -474,6 +551,8 @@ def prepare(root, version, operation, proposal):
             fail("关闭提案依据过期: " + rel)
         after = update["after"]
         validate_doc(Path(rel).name, after)
+        if rel == "roadmap.md":
+            check_roadmap_change(before, after, proposal.get("roadmap_sources"))
         if rel == req_rel:
             if requirement_basis(after) != requirement_basis(before):
                 fail("关闭不能同时改变需求范围；先完成需求变更与验证")
@@ -485,6 +564,7 @@ def prepare(root, version, operation, proposal):
     after = index_text(root, {version: closing_state})
     files["index.md"] = {"before": before, "after": after, "before_sha256": digest(before), "after_sha256": digest(after)}
     op = {"id": operation, "version": version, "created_at": stamp, "status": "prepared", "acceptance": acceptance,
+          "roadmap_sources": proposal.get("roadmap_sources", {}),
           "summary": proposal["summary"], "files": files, "inputs": state, "applied": [], "restored": [], "resolutions": {}, "attempts": []}
     save_operation(root, op)
     return {"operation": operation, "status": "prepared", "path": operation_rel(version, operation)}
@@ -499,8 +579,11 @@ def operation_status(root, version, operation, full=False):
 
 def completed_close_logs(root, op):
     version, operation = op["version"], op["id"]
-    append_log(root, "update:" + operation, "project-update", op["summary"], version, operation, timestamp=op["created_at"])
-    body = "- 用户验收：" + encode(op["acceptance"]) + "\n- 同步：" + op["summary"] + "\n- 恢复入口：" + operation_rel(version, operation)
+    summary = op["summary"]
+    if "roadmap_sources" in op:
+        summary += "\n- 规划用户来源：" + encode(op["roadmap_sources"])
+    append_log(root, "update:" + operation, "project-update", summary, version, operation, timestamp=op["created_at"])
+    body = "- 用户验收：" + encode(op["acceptance"]) + "\n- 同步：" + summary + "\n- 恢复入口：" + operation_rel(version, operation)
     append_log(root, "close:" + operation, "version-close", body, version, operation, timestamp=op["created_at"])
 
 
@@ -679,6 +762,8 @@ def validate(root, version=None, stage="requirements"):
         except (OSError, ValueError) as exc:
             errors.append(rel + ": " + str(exc))
     try:
+        if any(h["title"] == "短期待办" for h in headings(read(root, "roadmap.md"), 2)):
+            warnings.append("roadmap 仍使用旧标题短期待办；下次用户授权维护时可统一为 todo，当前不改写正文")
         config = read(root, "config.toml")
         if any(line.strip() and not line.lstrip().startswith("#") for line in config.splitlines()):
             warnings.append("config.toml 字段尚未定义，内容不会被读取")
@@ -733,6 +818,9 @@ def parser():
     q.add_argument("file", choices=VERSION_DOCS[1:])
     q.add_argument("--name", required=True)
     sub.add_parser("sync-index")
+    q = sub.add_parser("roadmap-update")
+    q.add_argument("--id", required=True)
+    q.add_argument("--proposal", required=True)
     q = sub.add_parser("validate")
     q.add_argument("--version")
     q.add_argument("--stage", choices=("requirements", "plan", "test", "close"), default="requirements")
@@ -782,6 +870,8 @@ def dispatch(args, root):
         return scaffold(root, args.version, args.name, args.file)
     if args.command == "sync-index":
         return sync_index(root)
+    if args.command == "roadmap-update":
+        return update_roadmap(root, args.id, json_input(args.proposal))
     if args.command == "validate":
         return validate(root, args.version, args.stage)
     if args.command == "log":
