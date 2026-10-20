@@ -38,21 +38,16 @@ roadmap 新模板使用 todo，旧短期待办标题只读兼容并提示，校�
 
 ## 日志与执行记录
 
-先读取 [日志规范](logging.md)，用 log-schema 获取当前 Action 的字段；用 apply_patch 创建 UTF-8 JSON 数据文件（可在临时目录），不要把复杂内容嵌进 shell 字符串。
+用 apply_patch 创建 UTF-8 正文文件（可在临时目录），不要把复杂正文嵌进 shell 字符串。
 
 ```text
---project <root> log-schema project-initiate
---project <root> log --id init-001 --action project-initiate --data-file <JSON路径>
---project <root> log --id plan-001 --action plan --version V1.0 --outcome partial --data-file <JSON路径>
---project <root> record code V1.0 --id code-001 --data-file <JSON路径> --implementation src/app.py --implementation tests/test_app.py
---project <root> record test V1.0 --id test-001 --data-file <JSON路径>
+--project <root> log --id init-001 --action project-initiate --body-file <正文路径>
+--project <root> log --id plan-001 --action plan --version V1.0 --outcome partial --body-file <正文路径>
+--project <root> record code V1.0 --id code-001 --body-file <正文路径> --implementation src/app.py --implementation tests/test_app.py
+--project <root> record test V1.0 --id test-001 --body-file <正文路径>
 ```
 
 log/record 可带 --parent <外层行为或操作id>。日志 id 为 ASCII 字母/数字及 `_.:-`，不超过 120 字符；新一次真实行为用新 id，同次写入重试沿用 id 与相同正文，内容不同报错。
-
---data-file 按章节名填写非空 Markdown 字符串，脚本按定义顺序渲染；也可用互斥的 --body-file 输入同样章节与顺序的 Markdown。新日志拒绝缺章、空值、错序、未知 Action 或未知执行状态。schema=1 的结构和内容指纹参与 validate；历史无 schema 条目不重排或补字段。
-
-log-schema 是只读命令，不写日志，也不要求已存在 pjkp；显式项目根目录仍须存在。执行状态包括 completed、partial、blocked、failed、undone、undo-partial、cancelled，描述行为执行，不等于测试通过或用户验收。
 
 record 会记录一条对应 Action 日志，无需额外 log。code 记录 spec、需求和指定实现文件的指纹，并使旧 test 记录失效；test 引用当前 code 批次和当前测试材料。implementation 是相对项目根的实际文件，不能指向 pjkp 内文档。缺少实现依据、过期 code 记录或已关闭版本会拒绝。
 

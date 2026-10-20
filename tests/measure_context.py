@@ -11,16 +11,14 @@ from test_project_keeper import KeeperTests, SCRIPT, pk
 
 def measure():
     skill = SCRIPT.parents[1]
-    runtime = [skill / "SKILL.md", skill / "assets/log-actions.json"] + [skill / "references" / (name + ".md") for name in ("project", "planning", "execution", "closing", "cli", "close-cli", "roadmap", "logging")]
+    runtime = [skill / "SKILL.md"] + [skill / "references" / (name + ".md") for name in ("project", "planning", "execution", "closing", "cli", "close-cli", "roadmap")]
     templates = list((skill / "assets/templates").iterdir())
     def size(files):
         return sum(len(p.read_bytes()) for p in set(files))
     entry_cli = [skill / "SKILL.md", skill / "references/cli.md"]
-    initial_route = entry_cli + [skill / "references/project.md", skill / "references/logging.md"] + [skill / "assets/templates" / name for name in (*pk.PROJECT_DOCS, "config.toml")]
-    def schema_size(action):
-        return len(json.dumps({"action": action, "schema": 1, "fields": pk.log_fields(action)}, ensure_ascii=False, indent=2).encode("utf-8"))
+    initial_route = entry_cli + [skill / "references/project.md"] + [skill / "assets/templates" / name for name in (*pk.PROJECT_DOCS, "config.toml")]
     report = {"method": "UTF-8 bytes; complete selected files + JSON navigation; estimates, not tokenizer counts or performance measurements", "cases": []}
-    report["cases"].append({"task": "project-initiate (fresh project)", "all_bytes": size(runtime + templates), "routed_bytes": size(initial_route) + schema_size("project-initiate"), "loaded": [str(p.relative_to(skill)) for p in initial_route]})
+    report["cases"].append({"task": "project-initiate (fresh project)", "all_bytes": size(runtime + templates), "routed_bytes": size(initial_route), "loaded": [str(p.relative_to(skill)) for p in initial_route]})
     case = KeeperTests()
     case.setUp()
     try:
@@ -29,7 +27,7 @@ def measure():
             if version != "V1.0":
                 case.close(version, "measure-close-" + str(n))
         for n in range(60):
-            pk.append_log(case.root, "history-" + str(n), "project-update", f"历史决定 {n}：保留原始背景与约束。\n- 依据：关联既有实现，不作为当前决策的唯一依据。\n- 原因：本条为独立已发生行为，不能用摘要替换原文。", "V0.1", legacy=True)
+            pk.append_log(case.root, "history-" + str(n), "project-update", f"历史决定 {n}：保留原始背景与约束。\n- 依据：关联既有实现，不作为当前决策的唯一依据。\n- 原因：本条为独立已发生行为，不能用摘要替换原文。", "V0.1")
         pjkp = case.root / "pjkp"
         project_all = [p for p in pjkp.rglob("*") if p.is_file()]
         code = [case.root / "app.py", case.root / "test_app.py"]
@@ -42,12 +40,12 @@ def measure():
                 case.close("V1.0", "measure-close-3")
             project_all = [p for p in pjkp.rglob("*") if p.is_file()]
             nav_bytes = len(json.dumps(pk.inventory(case.root, "V1.0"), ensure_ascii=False, indent=2).encode("utf-8"))
-            instructions = entry_cli + [skill / "references" / (group + ".md"), skill / "references/logging.md"]
+            instructions = entry_cli + [skill / "references" / (group + ".md")]
             # Undo may need project-update semantics when resolving a conflict.
             if task == "undo":
                 instructions.append(skill / "references/project.md")
                 instructions.append(skill / "references/close-cli.md")
-            report["cases"].append({"task": task, "all_bytes": size(runtime + templates + project_all + code), "routed_bytes": size(instructions + files) + nav_bytes + schema_size(task),
+            report["cases"].append({"task": task, "all_bytes": size(runtime + templates + project_all + code), "routed_bytes": size(instructions + files) + nav_bytes,
                                     "navigation_bytes": nav_bytes, "loaded_instructions": [str(p.relative_to(skill)) for p in instructions], "loaded_project": [str(p.relative_to(case.root)) for p in files]})
         for row in report["cases"]:
             row["reduction_percent"] = round(100 * (1 - row["routed_bytes"] / row["all_bytes"]), 1)
