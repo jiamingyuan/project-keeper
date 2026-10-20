@@ -268,3 +268,28 @@
 }
 ```
 </details>
+
+<!-- pjkp:log {"action": "github-publish", "id": "github-publish-20261020-v02-log-format", "outcome": "completed", "parent": null, "schema": 1, "sha256": "cf77d627f38900bb87c47da8b68ef4ff2906805c42197a67e6768e6ee40a8bd4", "time": "2026-10-20T11:39:59.925767+00:00", "version": "V0.2"} -->
+## 2026-10-20T11:39:59.925767+00:00 — github-publish — V0.2
+
+> 执行状态：completed · ID：github-publish-20261020-v02-log-format · parent：无
+
+### 用户授权与目标
+
+- 用户在 V0.2 追加逐 Action 的日志内容与呈现规范要求；延续此前将 V0.2 开发呈现在指定仓库的授权。
+- 仓库：jiamingyuan/project-keeper，分支 develop/V0.2。
+
+### 发布内容
+
+- 已推送提交 7366d4d：日志定义、渲染与校验、自动生成路径、历史兼容及 65 项测试。
+- 同步需求、spec、测试方案、测试结果和新格式执行记录；更新现有 PR 的标题和完整范围说明。
+
+### 远端结果
+
+- 草稿 PR：https://github.com/jiamingyuan/project-keeper/pull/1 。
+- 远端确认 OPEN、isDraft=true，来源 develop/V0.2、目标 main，推送成功。
+
+### 未完成项与后续
+
+- V0.2 继续等待用户审阅与验收，未合并 main 或执行 version-close。
+- V0.1 标签保持固定；原日志字节前缀校验一致，没有重写旧历史。
