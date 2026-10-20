@@ -107,3 +107,164 @@
 - 实际完成：推送 develop/V0.2 分支及首批实现提交 4fe36ad，创建草稿 PR https://github.com/jiamingyuan/project-keeper/pull/1 ，目标 main；将链接同步到 README 和 pjkp/index.md。
 - 验证：53 项测试通过、Skill 格式校验通过；代码和测试执行记录已保存，最终 V0.2 test 阶段结构检查无错误或警告。工作区提交前检查通过。
 - 状态：草稿 PR 待用户审阅，未合并 main、未发布 V0.2、未执行 V0.2 version-close，未自动勾选用户 todo。V0.1 标签仍固定在 1f171a9。
+
+<!-- pjkp:log {"action": "plan", "id": "plan-20261020-v02-log-format", "outcome": "completed", "parent": null, "schema": 1, "sha256": "a340cfeaf168ce023d75285e4054a499b56df2e4b057d3b55cb08fa1e924b0b3", "time": "2026-10-20T11:38:14.686137+00:00", "version": "V0.2"} -->
+## 2026-10-20T11:38:14.686137+00:00 — plan — V0.2
+
+> 执行状态：completed · ID：plan-20261020-v02-log-format · parent：无
+
+### 规划依据
+
+- 用户在 V0.2 追加要求：规范化 log 呈现，为每个 Action 定义日志内容。
+- 对照现有七个主要 Action、undo、辅助行为与当前脚本写入路径。
+
+### 方案与测试要点
+
+- 用单一 JSON 定义驱动必备章节、顺序和校验；提供按 Action 查询及 JSON 渲染。
+- 自动生成日志统一样式，旧记录与恢复请求保留原格式；关闭/撤销预检格式。
+
+### 需求回写
+
+- 已补入 V0.2/requirements.md，更新 spec 与 test-plan。
+- 未新增 roadmap 目标或里程碑；本轮只处理用户明确提出的版本要求。
+
+### 就绪与阻塞
+
+- 全部主要、辅助及已有扩展行为都有字段定义；结构与语义真实性的边界已说明。
+- 原 code/test 批次因范围和实现变化不再代表本轮完成，需独立记录新批次。
+
+### 产物与后续
+
+- 产物：assets/log-actions.json、references/logging.md 及本版需求、spec、测试方案。
+- 按当前实现和真实测试记录 code/test，更新既有草稿 PR，仍等待用户验收。
+
+<!-- pjkp:log {"action": "code-execute", "evidence": {"basis": {"V0.2/requirements.md": "a9c1aac2b974f3bbe2930dc8a4fe4923151aa029a269bc6bea36ff9b3e8388bf", "V0.2/spec.md": "1b0c4b8c451776e4ae82e4e23b22361377025bc5700fc7f353c58b9b2467d6a1"}, "id": "code-20261020-v02-002", "implementation": {"SKILL.md": "283392b661dc2c3c1f533fb9dec32425304e4e50dd47b71eace86da615122dde", "assets/log-actions.json": "b583cd28fd68804c46b4662b6dce4e838cafd824fab5228f98e2d065792973b4", "assets/templates/index.md": "d7e4a4914fb3a48b3fceee3008ac3e361cfbdd53221e7a0593bbc312b912e398", "assets/templates/log.md": "350b84d7b7680b745f168e9949c8717fc24f573af8e62876100dc003427c6fbc", "assets/templates/roadmap.md": "fba15df18630e1453fe8e451cd9801226cfadab1e46bde041d53ddd67e556f16", "references/cli.md": "b978cb8444280bf374fba84f9a297e4ec180299eb9bf45acb1ee5ff5e3d0f995", "references/close-cli.md": "b6bb23c07b212064504d8f5918bc0963049a2393f298fc99a68a74515730e0c7", "references/closing.md": "0c93808b84636103d815491fdac33500537b42d9c4b2ebca82f43bc80c721e59", "references/execution.md": "aabd95f5454f8d4bfdcfe1583ea0c0a882b905b71a7ffd91b2267b2eec299a56", "references/logging.md": "c249874ce13b7a3beb45563ad2cfc174e21599eb25fa9183b5f523ffea2d9db1", "references/planning.md": "ac3deb1c855b8dc042f7e0c755a94c4d872f03947b749c41b3fad222a5144fb5", "references/project.md": "1995848c34ceba08b022118db43628c7bae3703e6fa62ce85d027d0b89da907d", "references/roadmap.md": "bcb37361e1ae6347ce6928ca90bf20bd2f02be8f7109a9db916152b750cb9ebd", "references/verification.md": "6fcb58b5395c82b6f14a74da8af8420132255e1e6fe96280f26a63c45e0f5c06", "scripts/project_keeper.py": "62d7043b6e61322d6858baf9062939d756748460359c6a0e7602136a7defefaa", "tests/measure_context.py": "51f9275a7dd320eccc31c9d3b6510124de75b332166beca9147ceb4c9802f255", "tests/test_project_keeper.py": "e592fa6716ff4e219f083751512ed8418ff8446a756107c148435c673ff6e328"}}, "id": "code-20261020-v02-002", "outcome": "completed", "parent": null, "schema": 1, "sha256": "ee3296b49a592483bdd70085be17b6d7ac0cbc96ff12a27f10f9ddd1445cf3fb", "time": "2026-10-20T11:38:14.727146+00:00", "version": "V0.2"} -->
+## 2026-10-20T11:38:14.727146+00:00 — code-execute — V0.2
+
+> 执行状态：completed · ID：code-20261020-v02-002 · parent：无
+
+### 执行依据与范围
+
+- 依据用户追加的日志要求及当前 V0.2 需求、spec。
+- 范围为逐 Action 内容定义、规范渲染/校验、自动生成路径和历史重试兼容。
+
+### 任务与修改
+
+- 新增 assets/log-actions.json 与 references/logging.md，覆盖 7 个主要 Action、undo、2 个辅助行为及 2 个已有扩展行为。
+- 新增 log-schema 查询、JSON 数据输入、固定三级章节、状态行和独立机器证据。
+- 同步各路由说明、项目架构/简介/规则与 CLI；旧日志不重写。
+
+### 开发验证
+
+- 最新 65 项测试通过，Skill 格式与 diff 检查通过；读取量测量成功。
+- 详细经过和失败批次保留在 V0.2/test-results.md。
+
+### 偏差与阻塞
+
+- 复核中增加关闭/撤销格式预检，首轮暴露 prepared 操作未初始化 conflicts；已修复并回归。
+- 语义真实性仍由 Agent 对照来源检查；结构通过不能替代用户验收。
+
+### 结果与后续
+
+- 本轮代码与指令实现完成，按新批次记录执行依据。
+- 后续同步既有 V0.2 草稿 PR，V0.1 标签固定，V0.2 不自动关闭。
+
+<details data-pjkp="evidence">
+<summary>机器执行依据</summary>
+
+```json
+{
+  "basis": {
+    "V0.2/requirements.md": "a9c1aac2b974f3bbe2930dc8a4fe4923151aa029a269bc6bea36ff9b3e8388bf",
+    "V0.2/spec.md": "1b0c4b8c451776e4ae82e4e23b22361377025bc5700fc7f353c58b9b2467d6a1"
+  },
+  "id": "code-20261020-v02-002",
+  "implementation": {
+    "SKILL.md": "283392b661dc2c3c1f533fb9dec32425304e4e50dd47b71eace86da615122dde",
+    "assets/log-actions.json": "b583cd28fd68804c46b4662b6dce4e838cafd824fab5228f98e2d065792973b4",
+    "assets/templates/index.md": "d7e4a4914fb3a48b3fceee3008ac3e361cfbdd53221e7a0593bbc312b912e398",
+    "assets/templates/log.md": "350b84d7b7680b745f168e9949c8717fc24f573af8e62876100dc003427c6fbc",
+    "assets/templates/roadmap.md": "fba15df18630e1453fe8e451cd9801226cfadab1e46bde041d53ddd67e556f16",
+    "references/cli.md": "b978cb8444280bf374fba84f9a297e4ec180299eb9bf45acb1ee5ff5e3d0f995",
+    "references/close-cli.md": "b6bb23c07b212064504d8f5918bc0963049a2393f298fc99a68a74515730e0c7",
+    "references/closing.md": "0c93808b84636103d815491fdac33500537b42d9c4b2ebca82f43bc80c721e59",
+    "references/execution.md": "aabd95f5454f8d4bfdcfe1583ea0c0a882b905b71a7ffd91b2267b2eec299a56",
+    "references/logging.md": "c249874ce13b7a3beb45563ad2cfc174e21599eb25fa9183b5f523ffea2d9db1",
+    "references/planning.md": "ac3deb1c855b8dc042f7e0c755a94c4d872f03947b749c41b3fad222a5144fb5",
+    "references/project.md": "1995848c34ceba08b022118db43628c7bae3703e6fa62ce85d027d0b89da907d",
+    "references/roadmap.md": "bcb37361e1ae6347ce6928ca90bf20bd2f02be8f7109a9db916152b750cb9ebd",
+    "references/verification.md": "6fcb58b5395c82b6f14a74da8af8420132255e1e6fe96280f26a63c45e0f5c06",
+    "scripts/project_keeper.py": "62d7043b6e61322d6858baf9062939d756748460359c6a0e7602136a7defefaa",
+    "tests/measure_context.py": "51f9275a7dd320eccc31c9d3b6510124de75b332166beca9147ceb4c9802f255",
+    "tests/test_project_keeper.py": "e592fa6716ff4e219f083751512ed8418ff8446a756107c148435c673ff6e328"
+  }
+}
+```
+</details>
+
+<!-- pjkp:log {"action": "test-execute", "evidence": {"basis": {"V0.2/requirements.md": "a9c1aac2b974f3bbe2930dc8a4fe4923151aa029a269bc6bea36ff9b3e8388bf", "V0.2/spec.md": "1b0c4b8c451776e4ae82e4e23b22361377025bc5700fc7f353c58b9b2467d6a1", "V0.2/test-plan.md": "a5675b9e1f4e60c9db52d2139ab6411e08b80b0fcefce6edbd1181ca371f4eb9", "V0.2/test-results.md": "efebb23188d5163e3470bfc61195cb27e3c6295771970d611019a09149e9eec4"}, "code_id": "code-20261020-v02-002", "id": "test-20261020-v02-002", "implementation": {"SKILL.md": "283392b661dc2c3c1f533fb9dec32425304e4e50dd47b71eace86da615122dde", "assets/log-actions.json": "b583cd28fd68804c46b4662b6dce4e838cafd824fab5228f98e2d065792973b4", "assets/templates/index.md": "d7e4a4914fb3a48b3fceee3008ac3e361cfbdd53221e7a0593bbc312b912e398", "assets/templates/log.md": "350b84d7b7680b745f168e9949c8717fc24f573af8e62876100dc003427c6fbc", "assets/templates/roadmap.md": "fba15df18630e1453fe8e451cd9801226cfadab1e46bde041d53ddd67e556f16", "references/cli.md": "b978cb8444280bf374fba84f9a297e4ec180299eb9bf45acb1ee5ff5e3d0f995", "references/close-cli.md": "b6bb23c07b212064504d8f5918bc0963049a2393f298fc99a68a74515730e0c7", "references/closing.md": "0c93808b84636103d815491fdac33500537b42d9c4b2ebca82f43bc80c721e59", "references/execution.md": "aabd95f5454f8d4bfdcfe1583ea0c0a882b905b71a7ffd91b2267b2eec299a56", "references/logging.md": "c249874ce13b7a3beb45563ad2cfc174e21599eb25fa9183b5f523ffea2d9db1", "references/planning.md": "ac3deb1c855b8dc042f7e0c755a94c4d872f03947b749c41b3fad222a5144fb5", "references/project.md": "1995848c34ceba08b022118db43628c7bae3703e6fa62ce85d027d0b89da907d", "references/roadmap.md": "bcb37361e1ae6347ce6928ca90bf20bd2f02be8f7109a9db916152b750cb9ebd", "references/verification.md": "6fcb58b5395c82b6f14a74da8af8420132255e1e6fe96280f26a63c45e0f5c06", "scripts/project_keeper.py": "62d7043b6e61322d6858baf9062939d756748460359c6a0e7602136a7defefaa", "tests/measure_context.py": "51f9275a7dd320eccc31c9d3b6510124de75b332166beca9147ceb4c9802f255", "tests/test_project_keeper.py": "e592fa6716ff4e219f083751512ed8418ff8446a756107c148435c673ff6e328"}}, "id": "test-20261020-v02-002", "outcome": "completed", "parent": null, "schema": 1, "sha256": "a340d9c7ff0e48f8d43353f01680afdd2c28ca3241d04ab15a110fa81413f937", "time": "2026-10-20T11:38:14.768600+00:00", "version": "V0.2"} -->
+## 2026-10-20T11:38:14.768600+00:00 — test-execute — V0.2
+
+> 执行状态：completed · ID：test-20261020-v02-002 · parent：无
+
+### 批次与被测实现
+
+- 批次 dev-20261020-05；Agent 本地执行，Python 3.9.6，临时样例项目。
+- 被测实现为当前 V0.2 日志规范改动及新代码执行批次，机器指纹由 record 保存。
+
+### 方案与覆盖
+
+- 按当前 test-plan 覆盖日志定义、字段渲染、非法结构拒绝、机器证据、各自动生成路径、历史混合和旧请求重试。
+- 同时保留 roadmap 来源门槛、执行依据、关闭/undo、路径与多项目隔离回归。
+
+### 实际结果
+
+- python3 -B -m unittest discover -s tests：65 项通过。
+- 临时 venv 中执行 skill-creator quick_validate：Skill is valid!。
+- git diff --check 通过，tests/measure_context.py 成功；字节量对比不证明性能收益。
+
+### 失败与未执行
+
+- 预检初轮 65 项曾出现 1 失败、21 错误，根因 conflicts 字段未初始化，已修复；历史批次保留。
+- 未做独立模型真实工作流评测或用户身份认证；本轮不代替最终用户验收。
+
+### 证据与后续
+
+- 详细结果：[V0.2 测试结果](V0.2/test-results.md)，最新批次 dev-20261020-05。
+- 按新记录重新检查就绪状态并更新草稿 PR，等待用户审阅。
+
+<details data-pjkp="evidence">
+<summary>机器执行依据</summary>
+
+```json
+{
+  "basis": {
+    "V0.2/requirements.md": "a9c1aac2b974f3bbe2930dc8a4fe4923151aa029a269bc6bea36ff9b3e8388bf",
+    "V0.2/spec.md": "1b0c4b8c451776e4ae82e4e23b22361377025bc5700fc7f353c58b9b2467d6a1",
+    "V0.2/test-plan.md": "a5675b9e1f4e60c9db52d2139ab6411e08b80b0fcefce6edbd1181ca371f4eb9",
+    "V0.2/test-results.md": "efebb23188d5163e3470bfc61195cb27e3c6295771970d611019a09149e9eec4"
+  },
+  "code_id": "code-20261020-v02-002",
+  "id": "test-20261020-v02-002",
+  "implementation": {
+    "SKILL.md": "283392b661dc2c3c1f533fb9dec32425304e4e50dd47b71eace86da615122dde",
+    "assets/log-actions.json": "b583cd28fd68804c46b4662b6dce4e838cafd824fab5228f98e2d065792973b4",
+    "assets/templates/index.md": "d7e4a4914fb3a48b3fceee3008ac3e361cfbdd53221e7a0593bbc312b912e398",
+    "assets/templates/log.md": "350b84d7b7680b745f168e9949c8717fc24f573af8e62876100dc003427c6fbc",
+    "assets/templates/roadmap.md": "fba15df18630e1453fe8e451cd9801226cfadab1e46bde041d53ddd67e556f16",
+    "references/cli.md": "b978cb8444280bf374fba84f9a297e4ec180299eb9bf45acb1ee5ff5e3d0f995",
+    "references/close-cli.md": "b6bb23c07b212064504d8f5918bc0963049a2393f298fc99a68a74515730e0c7",
+    "references/closing.md": "0c93808b84636103d815491fdac33500537b42d9c4b2ebca82f43bc80c721e59",
+    "references/execution.md": "aabd95f5454f8d4bfdcfe1583ea0c0a882b905b71a7ffd91b2267b2eec299a56",
+    "references/logging.md": "c249874ce13b7a3beb45563ad2cfc174e21599eb25fa9183b5f523ffea2d9db1",
+    "references/planning.md": "ac3deb1c855b8dc042f7e0c755a94c4d872f03947b749c41b3fad222a5144fb5",
+    "references/project.md": "1995848c34ceba08b022118db43628c7bae3703e6fa62ce85d027d0b89da907d",
+    "references/roadmap.md": "bcb37361e1ae6347ce6928ca90bf20bd2f02be8f7109a9db916152b750cb9ebd",
+    "references/verification.md": "6fcb58b5395c82b6f14a74da8af8420132255e1e6fe96280f26a63c45e0f5c06",
+    "scripts/project_keeper.py": "62d7043b6e61322d6858baf9062939d756748460359c6a0e7602136a7defefaa",
+    "tests/measure_context.py": "51f9275a7dd320eccc31c9d3b6510124de75b332166beca9147ceb4c9802f255",
+    "tests/test_project_keeper.py": "e592fa6716ff4e219f083751512ed8418ff8446a756107c148435c673ff6e328"
+  }
+}
+```
+</details>

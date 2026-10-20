@@ -14,6 +14,10 @@ pk = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(pk)
 
 
+def sample_body(action, text):
+    return pk.format_log(action, {title: text for title in pk.log_fields(action)})
+
+
 class KeeperTests(unittest.TestCase):
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory(prefix="project-keeper-test-")
@@ -39,8 +43,8 @@ class KeeperTests(unittest.TestCase):
         result = subprocess.run([sys.executable, "test_app.py"], cwd=self.root, capture_output=True, text=True)
         self.assertEqual(result.returncode, 0)
         self.set(v + "/test-results.md", self.get(v + "/test-results.md") + "\n### 样例批次\n\n实际执行 python test_app.py，exit=0；add(1,2)=3。\n")
-        pk.record(self.root, v, "code", "code-" + v, "样例实现和开发验证完成", ["app.py", "test_app.py"])
-        pk.record(self.root, v, "test", "test-" + v, "实际测试退出码 0；完整输出见测试结果")
+        pk.record(self.root, v, "code", "code-" + v, sample_body("code-execute", "样例实现和开发验证完成"), ["app.py", "test_app.py"])
+        pk.record(self.root, v, "test", "test-" + v, sample_body("test-execute", "实际测试退出码 0；完整输出见测试结果"))
         return v
 
     def proposal(self, v="V1.0", changed=True):
@@ -87,7 +91,7 @@ class KeeperTests(unittest.TestCase):
         other.mkdir()
         pk.init(other, "other")
         before = pk.read(other, "log.md")
-        pk.append_log(self.root, "a", "project-update", "only first")
+        pk.append_log(self.root, "a", "project-update", sample_body("project-update", "only first"))
         self.assertEqual(pk.read(other, "log.md"), before)
 
     def test_paths_and_symlinks_rejected(self):
@@ -129,13 +133,14 @@ class KeeperTests(unittest.TestCase):
         self.assertFalse(pk.validate(self.root, "V1.0", "close")["valid"])
 
     def test_log_idempotence_and_correction(self):
-        self.assertTrue(pk.append_log(self.root, "e1", "project-update", "- a\n- b")["appended"])
+        body = sample_body("project-update", "- a\n- b")
+        self.assertTrue(pk.append_log(self.root, "e1", "project-update", body)["appended"])
         before = self.get("log.md")
-        self.assertFalse(pk.append_log(self.root, "e1", "project-update", "- a\n- b")["appended"])
+        self.assertFalse(pk.append_log(self.root, "e1", "project-update", body)["appended"])
         self.assertEqual(before, self.get("log.md"))
         with self.assertRaises(pk.KeeperError):
-            pk.append_log(self.root, "e1", "project-update", "不同结果")
-        pk.append_log(self.root, "e2", "correction", "更正 e1", parent="e1")
+            pk.append_log(self.root, "e1", "project-update", sample_body("project-update", "不同结果"))
+        pk.append_log(self.root, "e2", "correction", sample_body("correction", "更正 e1"), parent="e1")
         self.assertTrue(self.get("log.md").startswith(before))
         self.assertTrue(pk.validate(self.root)["valid"])
 
@@ -169,14 +174,14 @@ class KeeperTests(unittest.TestCase):
 
     def test_new_code_record_invalidates_old_test(self):
         self.ready()
-        pk.record(self.root, "V1.0", "code", "code-second", "重新核查", ["app.py", "test_app.py"])
+        pk.record(self.root, "V1.0", "code", "code-second", sample_body("code-execute", "重新核查"), ["app.py", "test_app.py"])
         self.assertIsNone(pk.get_state(self.get("V1.0/requirements.md"))["test"])
 
     def test_cannot_reuse_record_id_for_changed_basis(self):
         self.ready()
         self.set("V1.0/spec.md", self.get("V1.0/spec.md") + "\n变化\n")
         with self.assertRaises(pk.KeeperError):
-            pk.record(self.root, "V1.0", "code", "code-V1.0", "新结果", ["app.py"])
+            pk.record(self.root, "V1.0", "code", "code-V1.0", sample_body("code-execute", "新结果"), ["app.py"])
 
     def test_no_acceptance_no_close(self):
         self.ready()
@@ -379,7 +384,7 @@ class KeeperTests(unittest.TestCase):
         self.ready()
         rel = "V1.0/test-results.md"
         self.set(rel, self.get(rel) + "\n### 补充批次\n失败：外部依赖不可用；未执行：集成测试。\n")
-        pk.record(self.root, "V1.0", "test", "test-second", "测试已执行，存在失败和未覆盖项")
+        pk.record(self.root, "V1.0", "test", "test-second", sample_body("test-execute", "测试已执行，存在失败和未覆盖项"))
         evidence = self.get(rel)
         self.close()
         self.assertEqual(evidence, self.get(rel))
@@ -423,7 +428,7 @@ class KeeperTests(unittest.TestCase):
     def test_navigation_only_expands_requested_version(self):
         for v in ("V1.0", "V1.1"):
             pk.create_version(self.root, v, "样例")
-        pk.append_log(self.root, "history-1", "project-update", "历史原文保留")
+        pk.append_log(self.root, "history-1", "project-update", sample_body("project-update", "历史原文保留"))
         default = pk.inventory(self.root)
         selected = pk.inventory(self.root, "V1.1")
         all_versions = pk.inventory(self.root, all_versions=True)
@@ -446,12 +451,13 @@ class KeeperTests(unittest.TestCase):
     def test_cli_record_close_undo_end_to_end(self):
         self.ready()
         body = self.root / "behavior.md"
-        body.write_text("依据实际样例测试完成本轮记录", encoding="utf-8")
+        body.write_text(sample_body("code-execute", "依据实际样例测试完成本轮记录"), encoding="utf-8")
         def run(*args):
             proc = subprocess.run([sys.executable, "-B", str(SCRIPT), "--project", str(self.root), *args], text=True, capture_output=True)
             self.assertEqual(proc.returncode, 0, proc.stderr + proc.stdout)
             return json.loads(proc.stdout)
         run("record", "code", "V1.0", "--id", "cli-code", "--body-file", str(body), "--implementation", "app.py", "--implementation", "test_app.py")
+        body.write_text(sample_body("test-execute", "实际样例测试完成，证据见结果"), encoding="utf-8")
         run("record", "test", "V1.0", "--id", "cli-test", "--body-file", str(body))
         proposal = self.root / "proposal.json"
         proposal.write_text(json.dumps(self.proposal(), ensure_ascii=False), encoding="utf-8")
@@ -576,11 +582,162 @@ class KeeperTests(unittest.TestCase):
         pk.prepare(self.root, "V1.0", "legacy-close", self.proposal(changed=False))
         op = pk.load_operation(self.root, "V1.0", "legacy-close")
         op.pop("roadmap_sources")
+        op.pop("log_schema")
         pk.save_operation(self.root, op)
         pk.apply_close(self.root, "V1.0", "legacy-close")
         before = self.get("log.md")
         pk.apply_close(self.root, "V1.0", "legacy-close")
         self.assertEqual(before, self.get("log.md"))
+
+    def test_each_action_log_renders_and_validates(self):
+        actions = json.loads((SCRIPT.parents[1] / "assets/log-actions.json").read_text())["actions"]
+        for number, action in enumerate(actions):
+            with self.subTest(action=action):
+                data = {title: "- 已核对样例材料。\n- 未知部分：待用户确认。" for title in pk.log_fields(action)}
+                body = pk.format_log(action, dict(reversed(list(data.items()))))
+                pk.append_log(self.root, "format-" + str(number), action, body, outcome="partial")
+                meta, entry = pk.log_entries(self.get("log.md"))[-1]
+                self.assertEqual(meta["schema"], 1)
+                self.assertIn("执行状态：partial", entry)
+                self.assertEqual([h["title"] for h in pk.headings(entry, 3)], list(data))
+                self.assertEqual(pk.body_from_log_entry(meta, entry), body)
+        self.assertTrue(pk.validate(self.root)["valid"])
+
+    def test_structured_log_rejects_missing_extra_empty_and_injection(self):
+        fields = pk.log_fields("project-update")
+        valid = {title: "样例实际内容" for title in fields}
+        first = next(iter(fields))
+        cases = [{key: value for key, value in valid.items() if key != first},
+                 dict(valid, 未知字段="不应接受"), dict(valid, **{first: " "}),
+                 dict(valid, **{first: []}), dict(valid, **{first: "## 新行为\n绕过章节"})]
+        before = self.get("log.md")
+        for data in cases:
+            with self.subTest(data=data), self.assertRaises(pk.KeeperError):
+                pk.format_log("project-update", data)
+        self.assertEqual(before, self.get("log.md"))
+
+    def test_new_plaintext_unknown_action_wrong_order_and_status_reject(self):
+        valid = sample_body("project-update", "实际内容")
+        parts = valid.split("\n\n### ")
+        wrong_order = "### " + parts[1] + "\n\n" + parts[0] + "\n\n### " + "\n\n### ".join(parts[2:])
+        before = self.get("log.md")
+        for action, body, outcome in (("project-update", "没有章节", "completed"),
+                                      ("undefined", valid, "completed"),
+                                      ("project-update", wrong_order, "completed"),
+                                      ("project-update", valid, "passed")):
+            with self.subTest(action=action, outcome=outcome), self.assertRaises(pk.KeeperError):
+                pk.append_log(self.root, "reject", action, body, outcome=outcome)
+        self.assertEqual(before, self.get("log.md"))
+
+    def test_mixed_history_keeps_old_bytes_and_old_retry(self):
+        pk.append_log(self.root, "old-log", "project-update", "旧版无章节原文", legacy=True)
+        historical = self.get("log.md")
+        pk.append_log(self.root, "new-log", "project-update", sample_body("project-update", "新事实"))
+        mixed = self.get("log.md")
+        self.assertTrue(mixed.startswith(historical))
+        self.assertFalse(pk.append_log(self.root, "old-log", "project-update", "旧版无章节原文")["appended"])
+        self.assertEqual(mixed, self.get("log.md"))
+        self.assertTrue(pk.validate(self.root)["valid"])
+        with self.assertRaises(pk.KeeperError):
+            pk.append_log(self.root, "another-new", "project-update", "不能借旧行为使用旧格式")
+
+    def test_log_validation_detects_content_header_and_evidence_tampering(self):
+        self.ready()
+        original = self.get("log.md")
+        for changed in (original.replace("样例实现和开发验证完成", "篡改为未执行", 1),
+                        original.replace("> 执行状态：completed", "> 执行状态：failed", 1),
+                        original.replace("<summary>机器执行依据</summary>", "<summary>假证据</summary>", 1)):
+            with self.subTest(changed=changed[:80]):
+                self.set("log.md", changed)
+                self.assertFalse(pk.validate(self.root)["valid"])
+        self.set("log.md", original)
+        self.assertTrue(pk.validate(self.root)["valid"])
+
+    def test_malformed_execution_log_does_not_change_completion_state(self):
+        self.ready()
+        before, log = self.get("V1.0/requirements.md"), self.get("log.md")
+        with self.assertRaises(pk.KeeperError):
+            pk.record(self.root, "V1.0", "code", "invalid-record", "没提供规定内容", ["app.py"])
+        self.assertEqual(before, self.get("V1.0/requirements.md"))
+        self.assertEqual(log, self.get("log.md"))
+        meta, entry = pk.log_entries(log)[-1]
+        self.assertIn("code_id", meta["evidence"])
+        self.assertIn("<summary>机器执行依据</summary>", entry)
+
+    def test_partial_close_and_undo_follow_their_log_definitions(self):
+        self.ready()
+        pk.prepare(self.root, "V1.0", "partial-log", self.proposal())
+        self.set("roadmap.md", self.get("roadmap.md") + "\n后续编辑\n")
+        self.assertEqual(pk.apply_close(self.root, "V1.0", "partial-log")["status"], "partial")
+        meta, entry = pk.log_entries(self.get("log.md"))[-1]
+        self.assertEqual((meta["action"], meta["outcome"], meta["parent"]), ("version-close", "partial", "partial-log"))
+        pk.validate_log_body(meta["action"], pk.body_from_log_entry(meta, entry))
+        pk.undo_close(self.root, "V1.0", "partial-log", "用户要求撤销部分关闭")
+        meta, entry = pk.log_entries(self.get("log.md"))[-1]
+        self.assertEqual(meta["action"], "undo")
+        pk.validate_log_body("undo", pk.body_from_log_entry(meta, entry))
+        self.assertIn("后续编辑", self.get("roadmap.md"))
+
+    def test_legacy_execution_log_retry_keeps_original_payload(self):
+        self.ready()
+        capture = {"id": "legacy-code", "basis": pk.basis(self.root, "V1.0", "code"),
+                   "implementation": pk.source_hashes(self.root, ["app.py", "test_app.py"])}
+        body = "旧版实现记录"
+        details = body + "\n\n- 执行依据：" + pk.encode(capture)
+        pk.append_log(self.root, "legacy-code", "code-execute", details, "V1.0", legacy=True)
+        historical = self.get("log.md")
+        pk.record(self.root, "V1.0", "code", "legacy-code", body, ["app.py", "test_app.py"])
+        self.assertEqual(historical, self.get("log.md"))
+        self.assertEqual(pk.get_state(self.get("V1.0/requirements.md"))["code"], capture)
+
+    def test_old_undo_pending_log_recovery_keeps_legacy_format(self):
+        self.ready()
+        pk.prepare(self.root, "V1.0", "legacy-undo", self.proposal(changed=False))
+        op = pk.load_operation(self.root, "V1.0", "legacy-undo")
+        op.pop("log_schema")
+        pk.save_operation(self.root, op)
+        pk.apply_close(self.root, "V1.0", "legacy-undo")
+        with patch.object(pk, "append_log", side_effect=OSError("old pending log interrupted")):
+            with self.assertRaises(OSError):
+                pk.undo_close(self.root, "V1.0", "legacy-undo", "用户撤销")
+        pk.undo_close(self.root, "V1.0", "legacy-undo", "恢复旧操作日志")
+        self.assertNotIn("schema", pk.log_entries(self.get("log.md"))[-1][0])
+        self.assertTrue(pk.validate(self.root)["valid"])
+
+    def test_cli_log_schema_readonly_and_structured_write(self):
+        before = self.get("log.md")
+        def run(*args):
+            return subprocess.run([sys.executable, "-B", str(SCRIPT), "--project", str(self.root), *args], capture_output=True, text=True)
+        result = run("log-schema", "plan")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        fields = json.loads(result.stdout)["fields"]
+        self.assertEqual(before, self.get("log.md"))
+        data = self.root / "plan-log.json"
+        data.write_text(json.dumps({title: "真实样例依据，未知项待确认。" for title in fields}, ensure_ascii=False), encoding="utf-8")
+        result = run("log", "--id", "json-plan", "--action", "plan", "--data-file", str(data))
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertTrue(pk.validate(self.root)["valid"])
+        failed = run("log", "--id", "two-inputs", "--action", "plan", "--data-file", str(data), "--body-file", str(data))
+        self.assertEqual(failed.returncode, 2)
+
+    def test_close_prechecks_log_format_before_any_target_changes(self):
+        self.ready()
+        proposal = self.proposal()
+        proposal["summary"] = "### 插入错误层级\n内容"
+        before = {name: self.get(name) for name in pk.PROJECT_DOCS}
+        with self.assertRaises(pk.KeeperError):
+            pk.prepare(self.root, "V1.0", "bad-log-summary", proposal)
+        self.assertFalse(pk.path(self.root, "V1.0/.operations/bad-log-summary/operation.json").exists())
+        self.assertEqual(before, {name: self.get(name) for name in pk.PROJECT_DOCS})
+
+    def test_undo_prechecks_log_reason_before_restoring_files(self):
+        self.ready()
+        self.close()
+        before = {name: self.get(name) for name in pk.PROJECT_DOCS}
+        with self.assertRaises(pk.KeeperError):
+            pk.undo_close(self.root, "V1.0", "close-1", "### 错误层级\n用户撤销")
+        self.assertEqual(before, {name: self.get(name) for name in pk.PROJECT_DOCS})
+        self.assertEqual(pk.operation_status(self.root, "V1.0", "close-1")["status"], "applied")
 
 
 if __name__ == "__main__":

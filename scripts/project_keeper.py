@@ -27,6 +27,8 @@ STATE = re.compile(r"^<!-- pjkp:state (.+) -->$", re.M)
 START, END = "<!-- pjkp:versions:start -->", "<!-- pjkp:versions:end -->"
 LOG_META = re.compile(r"^<!-- pjkp:log (.+) -->$", re.M)
 ROADMAP_SECTIONS = ("愿景与长期规划", "里程碑", "todo")
+LOG_OUTCOMES = {"completed", "partial", "blocked", "failed", "undone", "undo-partial", "cancelled"}
+EVIDENCE_MARKER = '<details data-pjkp="evidence">'
 
 
 class KeeperError(ValueError):
@@ -228,11 +230,20 @@ def update_roadmap(root, event, proposal):
         fail("规划提案需要非空摘要且不能含保留标记")
     sources = checked_roadmap_sources(proposal.get("sources", {}))
     validate_doc("roadmap.md", after)
-    body = "- 用户来源：" + encode(sources) + "\n- 摘要：" + summary
-    body += "\n- 前指纹：" + expected + "\n- 后指纹：" + digest(after)
+    previous = next((meta for meta, _ in log_entries(read(root, "log.md")) if meta["id"] == event), None)
+    if previous is not None and "schema" not in previous:
+        body = "- 用户来源：" + encode(sources) + "\n- 摘要：" + summary
+        body += "\n- 前指纹：" + expected + "\n- 后指纹：" + digest(after)
+    else:
+        body = format_log("roadmap-update", {
+            "触发与用户来源": "- 用户依据：" + encode(sources),
+            "规划变化": summary,
+            "范围与关联": "- 前指纹：" + expected + "\n- 后指纹：" + digest(after) + "\n- 提供来源的模块：" + encode(list(sources)),
+            "结果与后续": "目标全文已保存；本记录不代表计划已交付或版本已验收。",
+        })
     if "<!-- pjkp:" in body:
         fail("规划来源不能包含日志保留标记")
-    if any(meta["id"] == event for meta, _ in log_entries(read(root, "log.md"))):
+    if previous is not None:
         append_log(root, event, "roadmap-update", body)
         return {"updated": False, "replayed": True, "id": event}
     before = read(root, "roadmap.md")
@@ -255,10 +266,23 @@ def validate_doc(name, text):
         if len(headings(text, 1)) != 1:
             fail("log 须有一个一级标题")
         seen = set()
-        for meta, _ in log_entries(text):
+        for meta, entry in log_entries(text):
             if meta["id"] in seen:
                 fail("重复日志 id")
             seen.add(meta["id"])
+            if "schema" in meta:
+                if meta["schema"] != 1:
+                    fail("未知日志 schema")
+                body = body_from_log_entry(meta, entry)
+                validate_log_body(meta["action"], body)
+                if meta["outcome"] not in LOG_OUTCOMES:
+                    fail("未知日志执行状态")
+                payload = {key: meta[key] for key in ("id", "action", "version", "parent", "outcome", "schema")}
+                payload["body"] = body
+                if "evidence" in meta:
+                    payload["evidence"] = meta["evidence"]
+                if digest(encode(payload)) != meta["sha256"]:
+                    fail("规范日志内容指纹不一致: " + meta["id"])
         return
     expected = [h["title"] for h in headings((TEMPLATES / name).read_text(encoding="utf-8"), 2)]
     found = [h["title"] for h in headings(text, 2)]
@@ -380,7 +404,67 @@ def log_entries(text):
     return result
 
 
-def append_log(root, event, action, body, version=None, parent=None, outcome="completed", timestamp=None):
+def log_fields(action):
+    definition = json.loads((TEMPLATES.parent / "log-actions.json").read_text(encoding="utf-8"))
+    if action not in definition["actions"]:
+        fail("未定义该 Action 的日志内容: " + action)
+    return definition["actions"][action]
+
+
+def format_log(action, data):
+    fields = log_fields(action)
+    if not isinstance(data, dict) or set(data) != set(fields):
+        fail("日志字段须完整且无未知项: " + ", ".join(fields))
+    chunks = []
+    for title in fields:
+        value = data[title]
+        if not isinstance(value, str) or not value.strip():
+            fail("日志字段须为非空 Markdown 字符串: " + title)
+        if any(h["level"] <= 3 for h in headings(value)):
+            fail("字段正文不能插入一级至三级标题: " + title)
+        chunks.append("### " + title + "\n\n" + value.strip())
+    body = "\n\n".join(chunks)
+    validate_log_body(action, body)
+    return body
+
+
+def validate_log_body(action, body):
+    fields = log_fields(action)
+    outline = headings(body)
+    if ("<!-- pjkp:" in body or EVIDENCE_MARKER in body or
+            any(h["level"] < 3 for h in outline) or
+            [h["title"] for h in outline if h["level"] == 3] != list(fields)):
+        fail("日志章节须依 Action 定义排列: " + ", ".join(fields))
+    if not outline or "\n".join(body.splitlines()[:outline[0]["line"] - 1]).strip():
+        fail("日志正文从必备三级章节开始")
+    for title in fields:
+        if not section(body, title).partition("\n")[2].strip():
+            fail("日志章节内容不能为空: " + title)
+
+
+def evidence_block(evidence):
+    return EVIDENCE_MARKER + "\n<summary>机器执行依据</summary>\n\n```json\n" + json.dumps(evidence, ensure_ascii=False, indent=2, sort_keys=True) + "\n```\n</details>"
+
+
+def body_from_log_entry(meta, entry):
+    lines = entry.splitlines()
+    header = f"## {meta['time']} — {meta['action']} — {meta['version'] or 'project'}"
+    status = f"> 执行状态：{meta['outcome']} · ID：{meta['id']} · parent：{meta['parent'] or '无'}"
+    if len(lines) < 4 or lines[1] != header or lines[3] != status:
+        fail("规范日志标题或状态行与元数据不一致")
+    outline = [h for h in headings(entry) if h["level"] == 3]
+    if not outline:
+        fail("规范日志缺少正文")
+    body = "\n".join(entry.splitlines()[outline[0]["line"] - 1:]).strip()
+    if "evidence" in meta:
+        suffix = "\n\n" + evidence_block(meta["evidence"])
+        if not body.endswith(suffix):
+            fail("规范日志机器证据块不一致")
+        body = body[:-len(suffix)].strip()
+    return body
+
+
+def append_log(root, event, action, body, version=None, parent=None, outcome="completed", timestamp=None, evidence=None, legacy=False):
     checked_id(event)
     checked_id(action)
     if version:
@@ -390,9 +474,19 @@ def append_log(root, event, action, body, version=None, parent=None, outcome="co
     if not isinstance(body, str) or not body.strip() or "<!-- pjkp:" in body:
         fail("日志正文不能为空或含保留标记")
     body = body.strip()
-    payload = {"id": event, "action": action, "version": version, "parent": parent, "outcome": outcome, "body": body}
-    checksum = digest(encode(payload))
     text = read(root, "log.md")
+    existing = next((meta for meta, _ in log_entries(text) if meta["id"] == event), None)
+    if existing is not None:
+        legacy = "schema" not in existing
+    payload = {"id": event, "action": action, "version": version, "parent": parent, "outcome": outcome, "body": body}
+    if not legacy:
+        validate_log_body(action, body)
+        if outcome not in LOG_OUTCOMES:
+            fail("未知日志执行状态")
+        payload["schema"] = 1
+        if evidence is not None:
+            payload["evidence"] = evidence
+    checksum = digest(encode(payload))
     for meta, _ in log_entries(text):
         if meta["id"] == event:
             if meta["sha256"] != checksum:
@@ -401,7 +495,12 @@ def append_log(root, event, action, body, version=None, parent=None, outcome="co
     meta = {k: v for k, v in payload.items() if k != "body"}
     meta.update({"time": timestamp or now(), "sha256": checksum})
     record = "\n<!-- pjkp:log " + encode(meta) + " -->\n"
-    record += f"## {meta['time']} — {action} — {version or 'project'}\n\n{body.strip()}\n"
+    record += f"## {meta['time']} — {action} — {version or 'project'}\n\n"
+    if not legacy:
+        record += f"> 执行状态：{outcome} · ID：{event} · parent：{parent or '无'}\n\n"
+    record += body + "\n"
+    if not legacy and evidence is not None:
+        record += "\n" + evidence_block(evidence) + "\n"
     write(root, "log.md", text.rstrip() + "\n" + record, digest(text))
     return {"appended": True, "id": event}
 
@@ -473,8 +572,12 @@ def record(root, version, kind, event, body, implementation=None, parent=None):
     if old and old["id"] == event and old != capture:
         fail("执行 id 已使用且依据变化；请核查并为新行为使用新 id")
     # Append first: if interrupted, repeat with same payload to finish state.
-    details = body + "\n\n- 执行依据：" + encode(capture)
-    append_log(root, event, kind + "-execute", details, version, parent)
+    prior = next((meta for meta, _ in log_entries(read(root, "log.md")) if meta["id"] == event), None)
+    if prior is not None and "schema" not in prior:
+        details = body + "\n\n- 执行依据：" + encode(capture)
+        append_log(root, event, kind + "-execute", details, version, parent)
+    else:
+        append_log(root, event, kind + "-execute", body, version, parent, evidence=capture)
     if old != capture:
         state[kind] = capture
         if kind == "code":
@@ -563,9 +666,12 @@ def prepare(root, version, operation, proposal):
     before = read(root, "index.md")
     after = index_text(root, {version: closing_state})
     files["index.md"] = {"before": before, "after": after, "before_sha256": digest(before), "after_sha256": digest(after)}
-    op = {"id": operation, "version": version, "created_at": stamp, "status": "prepared", "acceptance": acceptance,
+    op = {"id": operation, "version": version, "created_at": stamp, "status": "prepared", "acceptance": acceptance, "log_schema": 1,
           "roadmap_sources": proposal.get("roadmap_sources", {}),
-          "summary": proposal["summary"], "files": files, "inputs": state, "applied": [], "restored": [], "resolutions": {}, "attempts": []}
+          "summary": proposal["summary"], "files": files, "inputs": state, "applied": [], "restored": [], "resolutions": {}, "conflicts": [], "attempts": []}
+    # Validate generated content before any close target or operation is written.
+    close_update_log_body(op)
+    close_log_body(op)
     save_operation(root, op)
     return {"operation": operation, "status": "prepared", "path": operation_rel(version, operation)}
 
@@ -582,9 +688,36 @@ def completed_close_logs(root, op):
     summary = op["summary"]
     if "roadmap_sources" in op:
         summary += "\n- 规划用户来源：" + encode(op["roadmap_sources"])
-    append_log(root, "update:" + operation, "project-update", summary, version, operation, timestamp=op["created_at"])
+    if op.get("log_schema") == 1:
+        update = close_update_log_body(op)
+        append_log(root, "update:" + operation, "project-update", update, version, operation, timestamp=op["created_at"])
+        append_log(root, "close:" + operation, "version-close", close_log_body(op), version, operation, timestamp=op["created_at"])
+        return
+    append_log(root, "update:" + operation, "project-update", summary, version, operation, timestamp=op["created_at"], legacy=True)
     body = "- 用户验收：" + encode(op["acceptance"]) + "\n- 同步：" + summary + "\n- 恢复入口：" + operation_rel(version, operation)
-    append_log(root, "close:" + operation, "version-close", body, version, operation, timestamp=op["created_at"])
+    append_log(root, "close:" + operation, "version-close", body, version, operation, timestamp=op["created_at"], legacy=True)
+
+
+def close_update_log_body(op):
+    changed = [rel for rel, item in op["files"].items() if item["before"] != item["after"]]
+    summary = op["summary"] + "\n- 规划用户来源：" + encode(op.get("roadmap_sources", {}))
+    return format_log("project-update", {
+        "触发与来源": "版本关闭同步；用户确认：" + encode(op["acceptance"]),
+        "更新内容": summary,
+        "未确认事项": "遗留、延期和未确认范围以同步摘要为准，不额外推断。",
+        "影响与同步": "- 已检查文件：" + encode(list(op["files"])) + "\n- 有变化文件：" + encode(changed),
+        "结果与后续": "关闭操作已应用；恢复入口：" + operation_rel(op["version"], op["id"]),
+    })
+
+
+def close_log_body(op):
+    return format_log("version-close", {
+        "关闭依据": "- 版本：" + op["version"] + "\n- 操作：" + op["id"] + "\n- 代码批次：" + str(op["inputs"]["code"]["id"]) + "\n- 测试批次：" + str(op["inputs"]["test"]["id"]),
+        "用户验收": encode(op["acceptance"]),
+        "交付与遗留": op["summary"],
+        "项目同步": "- 已应用：" + encode(op["applied"]) + "\n- 冲突：" + encode(op["conflicts"]) + "\n- 规划用户来源：" + encode(op.get("roadmap_sources", {})),
+        "恢复入口与结果": "- 实际状态：" + op["status"] + "\n- 恢复入口：" + operation_rel(op["version"], op["id"]),
+    })
 
 
 def apply_close(root, version, operation):
@@ -623,7 +756,8 @@ def apply_close(root, version, operation):
     op["attempts"].append({"id": attempt, "kind": "close", "time": now(), "result": op["status"]})
     save_operation(root, op)
     if conflicts:
-        append_log(root, attempt, "version-close", "部分关闭；冲突：" + encode(conflicts) + "\n恢复入口：" + operation_rel(version, operation), version, operation, "partial")
+        body = close_log_body(op) if op.get("log_schema") == 1 else "部分关闭；冲突：" + encode(conflicts) + "\n恢复入口：" + operation_rel(version, operation)
+        append_log(root, attempt, "version-close", body, version, operation, "partial", legacy=op.get("log_schema") != 1)
     else:
         # Stable IDs repair missing logs after a crash without duplicating a
         # completed close. A new later close has a different operation id.
@@ -646,9 +780,11 @@ def undo_close(root, version, operation, reason):
     if not reason.strip():
         fail("undo 需记录原因")
     op = load_operation(root, version, operation)
+    if op.get("log_schema") == 1 and ("<!-- pjkp:" in reason or EVIDENCE_MARKER in reason or any(h["level"] <= 3 for h in headings(reason))):
+        fail("撤销原因须为不含一级至三级标题或保留标记的文本")
     if op["status"] == "undone":
         if op.get("pending_undo_log"):
-            append_log(root, **op["pending_undo_log"])
+            append_log(root, **op["pending_undo_log"], legacy=op.get("log_schema") != 1)
         return {"status": "undone", "already_undone": True, "operation": operation}
     req_rel = version + "/requirements.md"
     current_state = get_state(read(root, req_rel))
@@ -702,9 +838,17 @@ def undo_close(root, version, operation, reason):
     attempt = "undo-" + uuid.uuid4().hex
     op["attempts"].append({"id": attempt, "kind": "undo", "time": now(), "result": op["status"]})
     body = "- 原操作：" + operation + "\n- 原因：" + reason + "\n- 已处理：" + encode(op["restored"]) + "\n- 冲突：" + encode(conflicts) + "\n- 依据：" + operation_rel(version, operation)
+    if op.get("log_schema") == 1:
+        body = format_log("undo", {
+            "原操作与原因": "- 原操作：" + operation + "\n- 版本：" + version + "\n- 原因：" + reason,
+            "恢复范围": "- 已处理：" + encode(op["restored"]),
+            "保留的后续工作": "冲突文件保留当前内容；代码、测试和历史日志不回滚。详情以操作记录和冲突列表为准。",
+            "冲突与剩余事项": "- 冲突：" + encode(conflicts) + "\n- 存在冲突时保持部分恢复，需核对合并后续接。",
+            "结果与依据": "- 实际状态：" + op["status"] + "\n- 依据：" + operation_rel(version, operation),
+        })
     op["pending_undo_log"] = {"event": attempt, "action": "undo", "body": body, "version": version, "parent": operation, "outcome": op["status"]}
     save_operation(root, op)
-    append_log(root, **op["pending_undo_log"])
+    append_log(root, **op["pending_undo_log"], legacy=op.get("log_schema") != 1)
     return operation_status(root, version, operation)
 
 
@@ -818,6 +962,8 @@ def parser():
     q.add_argument("file", choices=VERSION_DOCS[1:])
     q.add_argument("--name", required=True)
     sub.add_parser("sync-index")
+    q = sub.add_parser("log-schema")
+    q.add_argument("action")
     q = sub.add_parser("roadmap-update")
     q.add_argument("--id", required=True)
     q.add_argument("--proposal", required=True)
@@ -827,7 +973,9 @@ def parser():
     q = sub.add_parser("log")
     q.add_argument("--id", required=True)
     q.add_argument("--action", required=True)
-    q.add_argument("--body-file", required=True)
+    content = q.add_mutually_exclusive_group(required=True)
+    content.add_argument("--body-file")
+    content.add_argument("--data-file")
     q.add_argument("--version")
     q.add_argument("--parent")
     q.add_argument("--outcome", default="completed")
@@ -835,7 +983,9 @@ def parser():
     q.add_argument("kind", choices=("code", "test"))
     q.add_argument("version")
     q.add_argument("--id", required=True)
-    q.add_argument("--body-file", required=True)
+    content = q.add_mutually_exclusive_group(required=True)
+    content.add_argument("--body-file")
+    content.add_argument("--data-file")
     q.add_argument("--implementation", action="append", default=[])
     q.add_argument("--parent")
     q = sub.add_parser("close")
@@ -870,14 +1020,18 @@ def dispatch(args, root):
         return scaffold(root, args.version, args.name, args.file)
     if args.command == "sync-index":
         return sync_index(root)
+    if args.command == "log-schema":
+        return {"action": args.action, "schema": 1, "fields": log_fields(args.action)}
     if args.command == "roadmap-update":
         return update_roadmap(root, args.id, json_input(args.proposal))
     if args.command == "validate":
         return validate(root, args.version, args.stage)
     if args.command == "log":
-        return append_log(root, args.id, args.action, Path(args.body_file).read_text(encoding="utf-8"), args.version, args.parent, args.outcome)
+        body = format_log(args.action, json_input(args.data_file)) if args.data_file else Path(args.body_file).read_text(encoding="utf-8")
+        return append_log(root, args.id, args.action, body, args.version, args.parent, args.outcome)
     if args.command == "record":
-        return record(root, args.version, args.kind, args.id, Path(args.body_file).read_text(encoding="utf-8"), args.implementation, args.parent)
+        body = format_log(args.kind + "-execute", json_input(args.data_file)) if args.data_file else Path(args.body_file).read_text(encoding="utf-8")
+        return record(root, args.version, args.kind, args.id, body, args.implementation, args.parent)
     if args.command == "close":
         if args.mode == "prepare":
             if not args.proposal:
@@ -901,7 +1055,7 @@ def main(argv=None):
     args = parser().parse_args(argv)
     try:
         root = root_path(args.project)
-        readonly = args.command in ("context", "read", "validate") or (args.command == "close" and args.mode == "status")
+        readonly = args.command in ("context", "read", "validate", "log-schema") or (args.command == "close" and args.mode == "status")
         if readonly:
             result = dispatch(args, root)
         else:

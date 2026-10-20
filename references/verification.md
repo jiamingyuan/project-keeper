@@ -26,6 +26,7 @@ python3 <skill-creator>/scripts/quick_validate.py <skill>
 | 用户验收才关闭，不等于发布 | closing.md，prepare | 无验收、无执行记录、过期依据、提案冲突拒绝 |
 | 双描述/规划/索引同步与 undo | 关闭提案及操作记录 | 中断、后续编辑、冲突合并、重复 apply/undo、重新关闭、后续版本摘要保护 |
 | 每行为一条 log，子行为关联，历史保留 | 各 Action 日志约定、append_log | 去重、更正追加、原历史保留、日志写入中断恢复 |
+| 逐 Action 规范日志内容与呈现 | assets/log-actions.json、logging.md、format_log/validate_log_body | 全 Action 渲染、必填/空值/错序/未知行为拒绝、JSON CLI、状态行与内容指纹、机器证据、部分关闭与历史混合/重放测试 |
 | 规划内容由用户提出，todo 命名统一 | roadmap.md、check_roadmap_change/update_roadmap、关闭 prepare | 逐模块来源缺失/错误、过期依据、写后日志重试、旧标题及关闭门槛测试；真实来源与语义由 Agent 核对 |
 | 轻上下文但不覆盖原知识 | 导航、指纹、原文章节提取、路由表 | 原文提取测试；四场景读取字节测量；冲突扩大读取属人工检查 |
 | 不依赖 Git、不部署、不安装或注册 | 标准库 helper、交付路径 | 临时项目无 Git；源码/测试保留；无注册代码 |

@@ -32,6 +32,8 @@
 
 apply 支持同一操作续接，依次更新描述、规划、版本结果和索引；不是跨文件原子事务。全部完成记关联的 project-update 与 version-close 日志；已完成 apply 重试不覆盖后续编辑。
 
+新操作保存 log_schema=1，自动生成 [对应 Action 的规范章节](logging.md)，部分关闭和 undo 也遵守各自定义。旧操作缺少该标识时仍按旧格式恢复日志，不能改写旧记录以适配新样式。
+
 undo 保留原记录、代码和测试。冲突返回 undo-partial；status --full 仅针对该操作展示快照供合并，不自动装载到每轮上下文。合并 JSON：
 
 ```json
