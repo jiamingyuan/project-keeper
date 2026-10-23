@@ -1,39 +1,32 @@
 # Project Keeper
 
-当前发布基线：[V0.1](https://github.com/jiamingyuan/project-keeper/releases/tag/V0.1)；本分支为 **V0.2 开发中**，尚未用户验收。这是在 Agent coding 中维护项目外部上下文的多 Action Skill。
+软件项目的轻量项目记忆：让 Agent 找回同会话中较早的决定，并在新会话中接续。它记录源码之外的方向、约束和真实进展，不接管开发流程。
 
-当前 V0.2 处于需求澄清：日志规范的诉求仅记录在需求文档，未经确认的本轮实现已撤回。后续由用户触发 plan action 再形成方案，确认后执行；既有方案和测试记录仅为历史参考。
-
-- 会话内：将需要持续使用的信息、决定、进展与未决问题保存到项目文件，按需找回。
-- 跨会话：让新会话通过文档理解项目全貌、约束和当前状态，接续开发。
+当前工作树为 **V0.2 开发中**，尚未用户验收或发布；已发布基线见 [V0.1](https://github.com/jiamingyuan/project-keeper/releases/tag/V0.1)。
 
 ## 使用
 
-将本仓库作为 `project-keeper` Skill 安装到你的 Agent 所支持的 Skill 目录，然后按 [SKILL.md](SKILL.md) 使用。运行辅助脚本需要 Python 3.9+，仅依赖标准库。
+将本目录作为 `project-keeper` Skill 安装或链接到宿主支持的 Skill 目录。按 [SKILL.md](SKILL.md) 直接读写项目 Markdown，不需要 Python、辅助 CLI 或固定 Action 命令。
 
-每个受管理项目使用自身根目录下的 `pjkp/`，不会把不同项目的数据集中到 Skill 目录。本仓库的 `pjkp/` 是 Project Keeper 自身的项目记录，不是新项目的模板；新项目由 `assets/templates/` 生成。
+已有 `pjkp/` 的项目可在普通开发任务中使用。新项目由用户要求后初始化；经同意在项目入口追加指针，是否自动加载仍取决于宿主。
 
-```sh
-python3 scripts/project_keeper.py --project /path/to/project context
+每个项目独立保存：
+
+```text
+pjkp/
+  index.md
+  rules.md
+  project-brief.md
+  architecture.md       # 必要时创建
+  Vx.x/iteration.md     # 用户指定版本后创建
 ```
 
-支持 `project-initiate`、`project-update`、`version-create`、`plan`、`code-execute`、`test-execute`、`version-close`，以及关闭操作的 `undo`。自然语言判断、代码修改及真实测试由 Agent 执行；辅助脚本负责确定性维护。
+[模板](assets/templates) 只是内容示例，不是固定格式。当前部分优先，候选与被取代的决定不能冒充现行结论；只要求记录不等于授权开发。旧项目可直接读取，不会自动迁移。
 
-## 项目资料与验证
+## 本项目
 
-- [自身项目入口](pjkp/index.md)
-- [V0.1 基线范围](pjkp/V0.1/requirements.md)
-- [本轮基线验证](pjkp/V0.1/test-results.md)
-- [V0.2 需求](pjkp/V0.2/requirements.md)、[执行方案](pjkp/V0.2/spec.md)、[测试方案](pjkp/V0.2/test-plan.md)
-- [V0.2 开发草稿 PR #1](https://github.com/jiamingyuan/project-keeper/pull/1)
-- [早期验证及已知限制](tests/verification-report.md)
+- [当前入口](pjkp/index.md)
+- [V0.2 目标、状态与验证](pjkp/V0.2/iteration.md)
+- [V0.1 基线](pjkp/V0.1/requirements.md)与[当时的验证](pjkp/V0.1/test-results.md)
 
-```sh
-python3 -B -m unittest discover -s tests -v
-```
-
-V0.1 保留现有实现和已知问题：本项目 roadmap 的 `todo` 标题与通用模板旧标题尚未同步；规划来源的通用写入限制尚待落实。实际 Agent 使用效果、跨会话恢复质量及复杂协作仍需真实项目验证。
-
-V0.2 开发分支已统一新模板的 todo 名称并兼容旧标题，增加规划写入和关闭同步的逐模块用户来源检查。首批 53 项自动化测试通过，等待用户审阅；两项用户 todo 尚未自动勾选，尚未执行 version-close。
-
-本次按用户要求为已有实现建立发布基线，没有追造历史开发过程或执行 `version-close`。发布标签与项目生命周期的关闭记录分别维护。
+本版移除了阶段链、独立执行记录、关闭/undo 事务、逐 Action 日志和运行时脚本。旧历史仍可追溯；实际接续效果与维护成本需要真实项目对照验证，不能由结构检查推出。

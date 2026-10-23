@@ -305,3 +305,55 @@
 - 本项目执行边界已记录：需求澄清仅更新需求，用户触发 plan 后才生成 spec/测试方案，方案确认后再执行代码和测试。该约束收录在 pjkp/rules.md，本轮未借此新增 Skill 功能。
 - 回退验证：恢复后的 53 项既有测试通过，Skill 格式校验通过；需求阶段结构校验无错误，提示 code/test 尚无完成记录符合当前阶段。该验证仅检查本次回退，不作为新增需求的 test-execute 或完成声明。
 - 远端处理：将以追加提交同步回退到原 V0.2 草稿 PR，更新其描述为需求澄清；不改写 Git 历史、不移动 V0.1 标签、不合并或关闭 V0.2。
+
+<!-- pjkp:log {"action": "roadmap-update", "id": "roadmap-update-20261020-lightweight-seamless", "outcome": "completed", "parent": null, "sha256": "791be48658473b49becdb7d1afd47673831a0055386a38366943dad7957f8c6f", "time": "2026-10-20T11:54:36.939112+00:00", "version": null} -->
+## 2026-10-20T11:54:36.939112+00:00 — roadmap-update — project
+
+- 用户来源：{"愿景与长期规划": {"source": "2026-10-20 当前对话：用户要求补充愿景，并逐项给出轻量化、无感化定义。", "statement": "pjkp需要实现足够轻量化、足够无感化。轻量化：整个skill足够轻量，不会在开发之外额外消耗过多token，保障token使用的高效性。无感化：不需要用户进行过多额外操作，也不需要用户显式调用pjkp，skill也会在用户的对话过程中根据需要自动被唤醒，而且在回复用户的对话中主动提到调用了pjkp。"}}
+- 摘要：按用户本次定义补充愿景：轻量化强调 Skill 的额外 token 开销和使用效率；无感化强调减少用户操作、无需显式调用、按对话需要自动唤醒，并在实际使用时主动说明。仅修改愿景模块，不新增 todo 或里程碑，不生成方案或实现。
+- 前指纹：8a5a65816dfabcc18c8d1527d981127889debb52626ba1ff7db58ac01771202c
+- 后指纹：edc492d2c09fff0a0a4dace71618954e9a91e27aaa5b3672a5be8dacbd6d9203
+
+<!-- pjkp:log {"action": "project-update", "id": "project-update-20261020-v02-stage-requirement", "outcome": "completed", "parent": null, "sha256": "3a674c12765a8cba760bf5c29a70bf80b3044ac6d851a6a44d7767eda1099bcd", "time": "2026-10-20T11:57:56.229292+00:00", "version": "V0.2"} -->
+## 2026-10-20T11:57:56.229292+00:00 — project-update — V0.2
+
+- 来源：用户要求在 V0.2 中让 Agent 避免直接开展迭代开发、忽略需求澄清和 plan 的行为。
+- 收录位置：V0.2/requirements.md 的版本目标、范围与预期行为、验收标准及已确认决定与开放问题。
+- 需求含义：补充诉求或要求收录只触发需求澄清和记录；用户触发 plan 后才生成方案，方案确认后再执行代码和测试。旧方案和历史交付不替代当前范围的确认。
+- 未确认项：阶段识别、确认记录和越级限制的具体机制，以及与无感化的配合方式，仍待澄清及后续 plan；不预设固定命令、字段或代码实现。
+- 本次结果：仅更新需求并记录本行为，V0.2 保持 requirements，未生成新方案、修改实现、写入新的 code/test 完成记录或执行版本关闭。上轮愿景记录和其他既有内容保留。
+
+<!-- pjkp:log {"action": "project-update", "id": "project-update-20261020-v02-remove-premature-files", "outcome": "completed", "parent": null, "sha256": "bc55c2c147dc2a230fe3a32b99d6a7bbedb886a2cf4b1f25978fede64911db4e", "time": "2026-10-20T13:19:27.336645+00:00", "version": "V0.2"} -->
+## 2026-10-20T13:19:27.336645+00:00 — project-update — V0.2
+
+- 用户来源：用户询问需求澄清阶段为何已有 spec、测试方案和测试结果，随后明确要求“好，那现在去掉这些文件吧”。
+- 删除范围：移除当前版本目录中的 V0.2/spec.md、V0.2/test-plan.md、V0.2/test-results.md；V0.2 目录仅保留 requirements.md，没有新增占位文件或将旧方案移到其他当前目录。
+- 同步位置：README.md、index.md 和 V0.2/requirements.md 已移除当前文件链接并说明阶段性生成规则。用户先前补充的需求、愿景和历史日志保留，未修改 Skill 源码、模板或测试。
+- 当前状态：V0.2 仍为 requirements，code/test 完成记录为空；没有执行 plan、code-execute、test-execute 或 version-close。用户触发 plan 后才生成当前 spec 和测试方案，方案确认后再执行，实际测试后再记录测试结果。
+- 历史恢复：删除的三份文件均已被 Git 跟踪，可从提交 d6bb7b5 恢复。历史日志按追加原则保留，不把早期未经确认的方案和执行记录当作当前有效依据。
+- 清理检查：V0.2 文件清单仅有 requirements.md，git diff --check 通过。需求阶段校验唯一错误为旧日志中的 V0.2/test-results.md 历史链接目标已删除；保留旧条目并在此更正，不为消除告警而重建文件或修改校验实现。code/test 尚无完成记录的提示符合当前阶段。
+
+<!-- pjkp:log {"action": "project-update", "id": "project-update-20261021-v02-remove-roadmap-requirement", "outcome": "completed", "parent": null, "sha256": "a8519d0413b7388324411076eaa9dd414ac619913f90e0f486f8bbc906f07106", "time": "2026-10-21T14:31:22.904302+00:00", "version": "V0.2"} -->
+## 2026-10-21T14:31:22.904302+00:00 — project-update — V0.2
+
+- 用户来源：2026-10-21 当前对话，用户要求“V0.2就不要roadmap文件了，保持轻量，把长期愿景放进project-brief里，短期todo直接在迭代的需求文档里记录，把这个信息同步进需求里”。
+- 收录位置：V0.2/requirements.md 的版本目标、范围与预期行为、验收标准、已确认决定与开放问题及版本结果。
+- 需求调整：取消独立 roadmap 作为本版文档，长期愿景归 project-brief，短期 todo 归对应迭代需求；替换与新要求冲突的 roadmap 文件及专用维护入口描述，不将旧实现当作新结构已完成。
+- 保留边界：规划内容仍由用户提出或明确采纳，Agent 不自行补写。旧资料迁移方式及原里程碑是否保留、如何归属尚未确定，不擅自迁移或采纳旧建议。
+- 本次结果：仅更新需求并追加本行为日志；现有 roadmap 和项目简介保持原样，Skill 指令、模板、脚本均未修改。V0.2 保持 requirements，未生成 spec 或测试方案，未进行代码执行、测试执行或版本关闭。
+- 检查：需求正文已核对，git diff --check 通过。既有历史日志失效链接的已知问题未在本次扩展处理；没有将检查记为 test-execute 或验收结论。
+
+<!-- pjkp:log {"action": "project-update", "id": "project-update-20261022-v02-lightweight-version-record", "outcome": "completed", "parent": null, "sha256": "be0a7fc30ff36f1f750213bd220d24a8f71f1f32acfca7caf3e95640ae33608d", "time": "2026-10-22T11:06:48.238549+00:00", "version": "V0.2"} -->
+## 2026-10-22T11:06:48.238549+00:00 — project-update — V0.2
+
+- 用户来源：2026-10-22 当前对话，用户要求版本迭代轻量化，不强制 plan、execute 或束缚开发方式；先创建 Vx.x 文件夹，文件夹里暂时只有一份记录该版本迭代内容的文件。
+- 收录位置：V0.2/requirements.md 的版本目标、范围与预期行为、验收标准、已确认决定与开放问题及版本结果。
+- 最新决定：版本管理以内容记录为主，不再强制固定开发阶段链；每个版本暂时仅一份迭代记录，不自动拆分生成需求、spec、测试方案和测试结果。此前短期 todo 随版本记录的归属及长期愿景进入 project-brief 的决定保留。
+- 替换旧约束：需求中强制先 plan 再执行的条款已改为历史决定，最新目标不要求完成指定 Action 才能更新或收尾；保留只要求记录时不能擅自开发、不得虚构成果或用户验收的授权和事实边界。
+- 未决事项：单一记录的文件名与必要内容、原规划执行类 Action 的去留及版本完成的表达方式仍待澄清。没有把 requirements.md 确定为未来记录文件名，也没有自行指定替代名称或新的固定流程。
+- 本次结果：仅更新本需求并追加一条日志；未修改 Skill 入口、规则、模板、脚本、项目简介或 roadmap，未重命名现有文件，未开始开发或执行测试。旧实现和阶段元数据仍是当前实现状态，不代表新要求已落地。
+- 检查：需求正文已核对，git diff --check 通过；未将文档检查写成代码执行、测试执行、验收或版本关闭记录。
+
+## 2026-10-23 — 旧日志停用
+
+按用户要求实施 V0.2 轻量化：本文件保留原历史，不再逐 Action 记账，也不默认读取；后续有意义的变化记录在对应版本的 iteration.md。旧阶段链、机器状态与旧链接仅反映当时事实，不是当前规则。新目标、迁移与验证见 V0.2/iteration.md。
