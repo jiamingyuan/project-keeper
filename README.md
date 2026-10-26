@@ -2,7 +2,7 @@
 
 软件项目的轻量项目记忆：让 Agent 找回同会话中较早的决定，并在新会话中接续。它记录源码之外的方向、约束和真实进展，不接管开发流程。
 
-当前版本：[V0.3](https://github.com/jiamingyuan/project-keeper/releases/tag/V0.3)。按用户要求将当前状态归档发布；发布不代表已完成独立模型行为验证、真实项目收益对照或用户验收。历史发布基线 [V0.1](https://github.com/jiamingyuan/project-keeper/releases/tag/V0.1) 保留。
+当前版本：[V0.4](https://github.com/jiamingyuan/project-keeper/releases/tag/V0.4)。收紧 rules 的原则边界，区分当前实现与迭代变化，尊重用户指定入口、不自动双写。发布不代表已完成独立模型行为验证、真实项目收益对照或用户验收。历史 [V0.3](https://github.com/jiamingyuan/project-keeper/releases/tag/V0.3) 与 [V0.1](https://github.com/jiamingyuan/project-keeper/releases/tag/V0.1) 标签保留。
 
 ## 使用
 
@@ -26,7 +26,8 @@ pjkp/
 ## 本项目
 
 - [当前入口](pjkp/index.md)
-- [V0.3 变化与验证边界](pjkp/V0.3/iteration.md)
+- [V0.4 变化与验证边界](pjkp/V0.4/iteration.md)
+- [V0.3 发布历史](pjkp/V0.3/iteration.md)
 - [V0.2 开发历史](pjkp/V0.2/iteration.md)（未单独打发布标签）
 - [V0.1 基线](pjkp/V0.1/requirements.md)与[当时的验证](pjkp/V0.1/test-results.md)
 
