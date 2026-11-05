@@ -2,7 +2,7 @@
 
 软件项目的轻量项目记忆：让 Agent 找回同会话中较早的决定，并在新会话中接续。它记录源码之外的方向、约束和真实进展，不接管开发流程。
 
-当前版本：[V0.4](https://github.com/jiamingyuan/project-keeper/releases/tag/V0.4)。收紧 rules 的原则边界，区分当前实现与迭代变化，尊重用户指定入口、不自动双写。发布不代表已完成独立模型行为验证、真实项目收益对照或用户验收。历史 [V0.3](https://github.com/jiamingyuan/project-keeper/releases/tag/V0.3) 与 [V0.1](https://github.com/jiamingyuan/project-keeper/releases/tag/V0.1) 标签保留。
+当前版本：V0.5。按核心价值筛选真实项目反馈：补上未命名工作的位置（`Unreleased/`）、凭证与隐私边界、入口指针再问一次，其余只收紧现有表述。最新发布为 [V0.4](https://github.com/jiamingyuan/project-keeper/releases/tag/V0.4)，历史 [V0.3](https://github.com/jiamingyuan/project-keeper/releases/tag/V0.3) 与 [V0.1](https://github.com/jiamingyuan/project-keeper/releases/tag/V0.1) 标签保留。
 
 ## 使用
 
@@ -17,8 +17,9 @@ pjkp/
   index.md
   rules.md
   project-brief.md
-  architecture.md       # 必要时创建
-  Vx.x/iteration.md     # 用户指定版本后创建
+  architecture.md          # 必要时创建
+  Unreleased/iteration.md  # 未命名的进行中工作，命名后改为 Vx.x/
+  Vx.x/iteration.md        # 用户指定版本后创建
 ```
 
 [模板](assets/templates) 只是内容示例，不是固定格式。当前部分优先，候选与被取代的决定不能冒充现行结论；只要求记录不等于授权开发。旧项目可直接读取，不会自动迁移。
@@ -26,9 +27,10 @@ pjkp/
 ## 本项目
 
 - [当前入口](pjkp/index.md)
-- [V0.4 变化与验证边界](pjkp/V0.4/iteration.md)
+- [V0.5 变化与验证](pjkp/V0.5/iteration.md)
+- [V0.4 发布历史](pjkp/V0.4/iteration.md)
 - [V0.3 发布历史](pjkp/V0.3/iteration.md)
 - [V0.2 开发历史](pjkp/V0.2/iteration.md)（未单独打发布标签）
 - [V0.1 基线](pjkp/V0.1/requirements.md)与[当时的验证](pjkp/V0.1/test-results.md)
 
-本版移除了阶段链、独立执行记录、关闭/undo 事务、逐 Action 日志和运行时脚本。旧历史仍可追溯；实际接续效果与维护成本需要真实项目对照验证，不能由结构检查推出。
+V0.2 起已移除阶段链、独立执行记录、关闭/undo 事务、逐 Action 日志和运行时脚本，旧历史仍可追溯。实际接续效果与维护成本尚需真实项目对照验证。
