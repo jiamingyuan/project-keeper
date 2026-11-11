@@ -2,7 +2,7 @@
 
 软件项目的轻量项目记忆：让 Agent 找回同会话中较早的决定，并在新会话中接续。它记录源码之外的方向、约束和真实进展，不接管开发流程。
 
-当前版本：V0.5。按核心价值筛选真实项目反馈：补上未命名工作的位置（`Unreleased/`）、凭证与隐私边界、入口指针再问一次，其余只收紧现有表述。最新发布为 [V0.4](https://github.com/jiamingyuan/project-keeper/releases/tag/V0.4)，历史 [V0.3](https://github.com/jiamingyuan/project-keeper/releases/tag/V0.3) 与 [V0.1](https://github.com/jiamingyuan/project-keeper/releases/tag/V0.1) 标签保留。
+当前版本：V0.6。新增按需创建的规划文件 `roadmap.md`：只保留未完成的开发阶段，是否进规划、放在哪个阶段都由用户确认；阶段与版本相互独立。最新发布为 [V0.4](https://github.com/jiamingyuan/project-keeper/releases/tag/V0.4)，历史 [V0.3](https://github.com/jiamingyuan/project-keeper/releases/tag/V0.3) 与 [V0.1](https://github.com/jiamingyuan/project-keeper/releases/tag/V0.1) 标签保留。
 
 ## 使用
 
@@ -18,6 +18,7 @@ pjkp/
   rules.md
   project-brief.md
   architecture.md          # 必要时创建
+  roadmap.md               # 用户要求规划时创建，只留未完成的阶段
   Unreleased/iteration.md  # 未命名的进行中工作，命名后改为 Vx.x/
   Vx.x/iteration.md        # 用户指定版本后创建
 ```
@@ -27,7 +28,8 @@ pjkp/
 ## 本项目
 
 - [当前入口](pjkp/index.md)
-- [V0.5 变化与验证](pjkp/V0.5/iteration.md)
+- [V0.6 变化与验证](pjkp/V0.6/iteration.md)
+- [V0.5 开发历史](pjkp/V0.5/iteration.md)（未单独打发布标签）
 - [V0.4 发布历史](pjkp/V0.4/iteration.md)
 - [V0.3 发布历史](pjkp/V0.3/iteration.md)
 - [V0.2 开发历史](pjkp/V0.2/iteration.md)（未单独打发布标签）
