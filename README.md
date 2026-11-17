@@ -2,7 +2,7 @@
 
 软件项目的轻量项目记忆：让 Agent 找回同会话中较早的决定，并在新会话中接续。它记录源码之外的方向、约束和真实进展，不接管开发流程。
 
-当前版本：V0.6。新增按需创建的规划文件 `roadmap.md`：只保留未完成的开发阶段，是否进规划、放在哪个阶段都由用户确认；阶段与版本相互独立。最新发布为 [V0.4](https://github.com/jiamingyuan/project-keeper/releases/tag/V0.4)，历史 [V0.3](https://github.com/jiamingyuan/project-keeper/releases/tag/V0.3) 与 [V0.1](https://github.com/jiamingyuan/project-keeper/releases/tag/V0.1) 标签保留。
+当前版本：V0.6。新增按需创建的规划文件 `roadmap.md`：只保留未完成的开发阶段，是否进规划、放在哪个阶段都由用户确认；阶段与版本相互独立。同时去掉 pjkp 的 rules.md，用户确认的项目规则改写进项目的 CLAUDE.md。最新发布为 [V0.4](https://github.com/jiamingyuan/project-keeper/releases/tag/V0.4)，历史 [V0.3](https://github.com/jiamingyuan/project-keeper/releases/tag/V0.3) 与 [V0.1](https://github.com/jiamingyuan/project-keeper/releases/tag/V0.1) 标签保留。
 
 ## 使用
 
@@ -15,7 +15,6 @@
 ```text
 pjkp/
   index.md
-  rules.md
   project-brief.md
   architecture.md          # 必要时创建
   roadmap.md               # 用户要求规划时创建，只留未完成的阶段
@@ -23,7 +22,7 @@ pjkp/
   Vx.x/iteration.md        # 用户指定版本后创建
 ```
 
-[模板](assets/templates) 只是内容示例，不是固定格式。当前部分优先，候选与被取代的决定不能冒充现行结论；只要求记录不等于授权开发。旧项目可直接读取，不会自动迁移。
+用户确认的项目规则写进项目的 CLAUDE.md，pjkp 不另存。[模板](assets/templates) 只是内容示例，不是固定格式。当前部分优先，候选与被取代的决定不能冒充现行结论；只要求记录不等于授权开发。旧项目可直接读取，不会自动迁移。
 
 ## 本项目
 

@@ -92,7 +92,7 @@ V0.2 移除：旧的阶段链；plan、code-execute、test-execute、version-clo
 
 本次收尾以 main 的 `4f51d87` 为比较基线，归档其后工作树中的两项已确认修正：
 
-- 项目规则的作用域：在 [Skill](../../SKILL.md) 和 [rules 模板](../../assets/templates/rules.md) 中明确区分全局偏好与项目特定长期约束，不因来源是用户就自动收录。动机来自用户指出的 media-keeper 误收问题；原条目清理及来源证据见下方历史记录，不包含在本仓库 diff 中。
+- 项目规则的作用域：在 [Skill](../../SKILL.md) 和 [rules 模板](https://github.com/jiamingyuan/project-keeper/blob/8c6671b/assets/templates/rules.md) 中明确区分全局偏好与项目特定长期约束，不因来源是用户就自动收录。动机来自用户指出的 media-keeper 误收问题；原条目清理及来源证据见下方历史记录，不包含在本仓库 diff 中。
 - 版本记录的触发与依据：兼容 PR、直接提交和提前命名要求记录；同版本续写同一文件。以实际 diff 为变化依据、会话为背景、真实测试为验证依据；[迭代模板](../../assets/templates/iteration.md)用“变化内容”替代逐步日志式记录。
 - 同步 [项目简介](../project-brief.md)、[架构](../architecture.md)、[入口](../index.md) 与本文件，保留原版本目标、用户决定、V0.1 和旧日志。
 

@@ -16,15 +16,15 @@
 
 ### 决定来源
 
-- 用户原话：“要求如果用户在agent.md里增加的规则，就不要在rule文件里增加了，可以理解为agent.md是agent项目级的规则，而pjkp里的rule是用户定义项目级的规则”。尊重明确目标，不以项目特定或长期有效为由双写；入口或含义不明时再澄清，迁移另需明确要求。
+- 用户原话：“要求如果用户在agent.md里增加的规则，就不要在rule文件里增加了，可以理解为agent.md是agent项目级的规则，而pjkp里的rule是用户定义项目级的规则”。尊重明确目标，不以项目特定或长期有效为由双写；入口或含义不明时再澄清，迁移另需明确要求。（2026-11-17 已取代：项目规则不再存于 pjkp，改写进项目的 CLAUDE.md，见 [V0.6](../V0.6/iteration.md#决定)；原文保留作历史。）
 - 用户指出“后端框架用nestjs，本质上是architecture里的概念，来源分类是一次迭代过程中的变动，不是rule的概念”。本轮按语义区分原则与实现事实，不把当前选型推成永久禁令；当前术语与这次纠正历史分别保存在权威现状说明与迭代记录，可互相引用。
 - Claude Code 实际以 `claude-opus-5-5`、max、`--permission-mode plan` 返回方案，禁用工具，由主 Agent 实施。首次调用超时，没有方案或文件改动；精简输入重试后成功。规划返回不算独立模型行为验证。
 
 ### 变化与归位
 
 - [Skill](../../SKILL.md) 替换旧的 rules 收录段，明确用户确认的持续项目原则、安全与输出质量要求，与 Agent 工作规则、当前事实及迭代变化的分工；不设关键词门槛，不因为约束诞生于迭代就排除其长期效力。只在有歧义时询问，不为填模板编规则。
-- [rules 模板](../../assets/templates/rules.md) 同步原则边界与指定入口不双写；[architecture 模板](../../assets/templates/architecture.md) 容纳实际选型与技术前提，项目原则引用 rules，不重复定义。其余三个模板、自动发现设置与项目入口指针不变，无新增运行机制；本次归档将版本标记更新为 V0.4。
-- [自身 rules](../rules.md) 保留用户明确的项目资料位置、规划来源、编号约定与 V0.1 基线边界；新增用户确认的规则归属原则。现行 [index](../index.md)、[简介](../project-brief.md)、[架构](../architecture.md) 与 [README](../../README.md) 指向 V0.4；V0.3 仅保留发布历史及本次记录迁移指针。
+- [rules 模板](https://github.com/jiamingyuan/project-keeper/blob/V0.4/assets/templates/rules.md) 同步原则边界与指定入口不双写；[architecture 模板](../../assets/templates/architecture.md) 容纳实际选型与技术前提，项目原则引用 rules，不重复定义。其余三个模板、自动发现设置与项目入口指针不变，无新增运行机制；本次归档将版本标记更新为 V0.4。
+- [自身 rules](https://github.com/jiamingyuan/project-keeper/blob/V0.4/pjkp/rules.md) 保留用户明确的项目资料位置、规划来源、编号约定与 V0.1 基线边界；新增用户确认的规则归属原则。现行 [index](../index.md)、[简介](../project-brief.md)、[架构](../architecture.md) 与 [README](../../README.md) 指向 V0.4；V0.3 仅保留发布历史及本次记录迁移指针。
 - [V0.2 历史决定](../V0.2/iteration.md#决定)保留“来自 AGENTS.md 的真正项目约定并不因此排除”的原文，标为部分已取代并指向本版决定；原目标全文不改。
 
 从自身 rules 移出的原文与来源：
